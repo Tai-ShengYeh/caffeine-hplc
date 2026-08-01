@@ -4,18 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>HPLC 咖啡因定量互動教學 — 層析圖、峰積分與檢量線</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#f7f8fa; --panel:#ffffff; --ink:#1a2233; --ink2:#4a5568; --ink3:#8492a6;
-  --line:#e2e8f0; --line2:#cbd5e1; --accent:#c0392b; --accent2:#2563eb;
-  --band:#fbbf2422; --ok:#059669; --warn:#dc2626; --code:#f1f5f9;
-}
-@media (prefers-color-scheme:dark){
-  :root{
-    --bg:#0e1218; --panel:#161c25; --ink:#e6ebf2; --ink2:#a8b3c4; --ink3:#6b7a90;
-    --line:#242c38; --line2:#394454; --accent:#ff6b5b; --accent2:#60a5fa;
-    --band:#fbbf2418; --ok:#34d399; --warn:#f87171; --code:#1b222c;
-  }
+  --bg:#FFFFFF; --panel:#F5F2E9; --ink:#1A1A1A; --ink2:#52493b; --ink3:#8a806c;
+  --line:#E4DECC; --line2:#D9D2BE; --accent:#0E7C7B; --accent2:#C8941F;
+  --band:#C8941F22; --ok:#3F8F5F; --warn:#B23A20; --code:#EFEADA;
+  color-scheme: light;
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth;scroll-padding-top:64px}
@@ -37,7 +34,7 @@ nav a:hover{background:var(--line);color:var(--ink)}
 
 /* ---------- hero ---------- */
 header{padding:56px 0 40px;border-bottom:1px solid var(--line)}
-header h1{font-size:clamp(26px,4.4vw,40px);line-height:1.28;margin:0 0 14px;letter-spacing:-.01em}
+header h1{font-size:clamp(26px,4.4vw,40px);line-height:1.28;margin:0 0 14px;letter-spacing:-.01em;font-weight:900}
 header p{font-size:17px;color:var(--ink2);margin:0;max-width:62ch}
 .tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px}
 .tag{font-size:12.5px;padding:4px 11px;border:1px solid var(--line2);border-radius:99px;color:var(--ink2)}
@@ -45,7 +42,7 @@ header p{font-size:17px;color:var(--ink2);margin:0;max-width:62ch}
 /* ---------- sections ---------- */
 section{padding:52px 0;border-bottom:1px solid var(--line)}
 section:last-of-type{border-bottom:0}
-h2{font-size:24px;margin:0 0 6px;letter-spacing:-.01em;display:flex;align-items:baseline;gap:12px}
+h2{font-size:24px;margin:0 0 6px;letter-spacing:-.01em;display:flex;align-items:baseline;gap:12px;font-weight:900}
 h2 .num{font-size:13px;color:var(--accent);font-weight:700;letter-spacing:.12em}
 h3{font-size:16.5px;margin:30px 0 10px}
 p{margin:12px 0;color:var(--ink2)}
@@ -53,7 +50,7 @@ p{margin:12px 0;color:var(--ink2)}
 strong{color:var(--ink);font-weight:600}
 
 /* ---------- figure panels ---------- */
-.fig{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;margin:22px 0}
+.fig{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px;margin:22px 0}
 .fig figcaption{font-size:13px;color:var(--ink3);margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
 .ctrl{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin-bottom:14px;font-size:13.5px}
 .ctrl label{display:inline-flex;align-items:center;gap:6px;cursor:pointer;color:var(--ink2)}
@@ -99,8 +96,9 @@ td.hi{color:var(--accent);font-weight:700}
 
 /* ---------- steps ---------- */
 .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin:26px 0}
-.step{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px}
-.step em{font-style:normal;font-size:11.5px;color:var(--accent);font-weight:700;letter-spacing:.1em}
+.step{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;transition:transform .15s,box-shadow .15s}
+.step:hover{transform:translateY(-3px);box-shadow:0 10px 22px rgba(26,26,26,.08)}
+.step em{font-style:normal;font-size:11.5px;color:var(--accent);font-weight:900;letter-spacing:.1em}
 .step h4{margin:6px 0 5px;font-size:15px}
 .step p{margin:0;font-size:13.5px;line-height:1.6}
 
@@ -123,7 +121,11 @@ ol.refs li:target{background:var(--code);border-radius:8px;padding-left:8px}
 h3.refgrp{font-size:15px;margin:26px 0 2px;color:var(--ink2);
           letter-spacing:.02em;padding-bottom:6px;border-bottom:1px solid var(--line2)}
 
-footer{padding:36px 0 60px;color:var(--ink3);font-size:13px}
+footer{margin-top:12px;background:var(--ink);color:#cfc8b6;font-size:13px}
+footer .wrap{padding:28px 20px 32px}
+footer b{color:#C8941F}
+footer a{color:#9fd3d2}
+footer code{background:rgba(255,255,255,.08);color:#e6dfce}
 .tip{font-size:12.5px;color:var(--ink3);margin-top:8px}
 @media (max-width:640px){
   section{padding:38px 0}
@@ -158,7 +160,7 @@ footer{padding:36px 0 60px;color:var(--ink3);font-size:13px}
   <h2><span class="num">STEP 1</span>定量的邏輯</h2>
   <p class="lead">HPLC 偵測器量到的是<strong>吸光訊號隨時間的變化</strong>，不是濃度。
      要得到濃度，必須經過三個轉換。反相 HPLC 搭配紫外偵測（咖啡因在 272–280 nm 有強吸收）
-     是飲料與茶葉中咖啡因定量的標準做法<a class="cite" href="#r13">[13,14]</a>。</p>
+     是飲料與茶葉中咖啡因定量的標準做法<a class="cite" href="#r15">[13,14]</a>。</p>
 
   <figure class="fig">
     <svg id="flow" viewBox="0 0 900 210" role="img" aria-label="HPLC 定量流程圖"></svg>
@@ -422,6 +424,25 @@ footer{padding:36px 0 60px;color:var(--ink3);font-size:13px}
        殘差是否隨機、各標準品<strong>回算濃度</strong>是否落在標稱值 ±5% 內、樣品是否落在檢量線範圍內。
        本例回算濃度誤差為 −1.7%～+3.1%，通過。IUPAC 的單成分檢量線指引<a class="cite" href="#r9">[9]</a>
        與 ICH Q2 確效規範<a class="cite" href="#r11">[11]</a> 對線性、範圍與 LOD/LOQ 的評估都有明確要求。</p></div>
+
+  <h3>這裡為什麼沒有加權？</h3>
+  <p>你可能在別的教材看過「檢量線要加權」。本頁用的是<strong>未加權</strong>的最小平方法，
+     這是刻意的選擇，不是省略。判準不在於「要不要加權」這個問句本身，而在於
+     <strong>儀器響應的標準差 σ 隨濃度 x 怎麼變</strong><a class="cite" href="#r13">[13]</a>：</p>
+  <ul>
+    <li>σ 不隨濃度改變（變異數齊一）→ <strong>不加權</strong>即為最佳線性不偏估計</li>
+    <li>σ² 與 x 成正比 → 用 <code>1/x</code></li>
+    <li>σ 與 x 成正比，也就是相對標準差大致固定 → 用 <code>1/x²</code></li>
+  </ul>
+  <p>本組標準品扣掉空白後只跨 <strong>8 倍</strong>（25 → 200 ppm），殘差圖沒有出現「低濃度端擠成一團、
+     高濃度端散開」的喇叭形，看不到明顯的異質變異，所以未加權是合理的。
+     真正需要加權的是動態範圍拉得很開的情況——變異數不齊一卻仍用未加權迴歸時，
+     高濃度點會支配整條線，低濃度端的回算濃度會嚴重失真<a class="cite" href="#r14">[14]</a>。</p>
+  <div class="note"><b>對照組：跨 400 倍會發生什麼事</b>
+    <p>同系列的<a href="https://tai-shengyeh.github.io/basa-hplc/" target="_blank" rel="noopener">苯甲酸／己二烯酸教材</a>
+       標準品從 0.25 跨到 100 ppm（400 倍）。那組資料未加權時，0.25 ppm 的標準點被回算成 2.1 ppm，
+       <strong>回收率 842%</strong>，LOQ 被推到 23.6 ppm；改用 <code>1/x²</code> 後回收率全部回到 95–110%。
+       同樣是 HPLC 檢量線，濃度範圍不同，答案就不同——這也是為什麼不該把「要加權」當成通則背下來。</p></div>
 </div></section>
 
 <!-- ============================================ 5 ============================================ -->
@@ -515,8 +536,9 @@ footer{padding:36px 0 60px;color:var(--ink3);font-size:13px}
 <!-- ============================================ refs ============================================ -->
 <section id="refs"><div class="wrap">
   <h2><span class="num">參考文獻</span>References</h2>
-  <p class="lead">以下文獻對應本頁實際使用的演算法與規範。第 1–10、13–14 項的書目資料
-     已透過 Crossref 以 DOI 逐筆核對；第 11–12 項為法規指引與教科書，無 DOI。</p>
+  <p class="lead">以下文獻對應本頁實際使用的演算法與規範。第 1–10、13–16 項的書目資料
+     已逐筆核對 DOI（第 13–14 項經 PubMed 核對，其餘經 Crossref）；
+     第 11–12 項為法規指引與教科書，無 DOI。</p>
 
   <h3 class="refgrp">A · 峰對齊與訊號前處理</h3>
   <ol class="refs">
@@ -602,17 +624,29 @@ footer{padding:36px 0 60px;color:var(--ink3);font-size:13px}
       <span class="use">由檢量線反推濃度的標準誤公式
         s<sub>C</sub> = (s/b)√(1/m + 1/n + (C−C̄)²/S<sub>xx</sub>) 及其信賴區間。教科書，無 DOI。</span>
     </span></li>
+    <li id="r13"><span class="n">[13]</span><span>
+      <span class="t">Selecting the correct weighting factors for linear and quadratic calibration curves with least-squares regression algorithm in bioanalytical LC–MS/MS assays and impacts of using incorrect weighting factors on curve stability, data quality, and assay performance.</span>
+      <span class="j">Gu H., Liu G., Wang J., Aubry A.-F., Arnold M. E. (2014). <i>Analytical Chemistry</i>, 86(18), 8959–8966.</span>
+      <a href="https://doi.org/10.1021/ac5018265" target="_blank" rel="noopener">10.1021/ac5018265</a>
+      <span class="use">權重因子的選用準則：由響應標準差 σ 與濃度 x 的關係決定——σ 為常數用不加權、σ² 正比於 x 用 1/x、σ 正比於 x 用 1/x²。本頁 STEP 6 依此說明這組資料為何採未加權迴歸。</span>
+    </span></li>
+    <li id="r14"><span class="n">[14]</span><span>
+      <span class="t">Linear regression for calibration lines revisited: weighting schemes for bioanalytical methods.</span>
+      <span class="j">Almeida A. M., Castel-Branco M. M., Falcão A. C. (2002). <i>Journal of Chromatography B</i>, 774(2), 215–222.</span>
+      <a href="https://doi.org/10.1016/S1570-0232(02)00244-1" target="_blank" rel="noopener">10.1016/S1570-0232(02)00244-1</a>
+      <span class="use">變異數不齊一時若仍用未加權迴歸，高濃度點會支配迴歸線、低濃度端準確度變差；以 HPLC 實例證實加權可改善低濃度端。</span>
+    </span></li>
   </ol>
 
   <h3 class="refgrp">C · 咖啡因的 HPLC 定量</h3>
   <ol class="refs">
-    <li id="r13"><span class="n">[13]</span><span>
+    <li id="r15"><span class="n">[15]</span><span>
       <span class="t">Determination of caffeine in beverages by high performance liquid chromatography.</span>
       <span class="j">DiNunzio J. E. (1985). <i>Journal of Chemical Education</i>, 62(5), 446.</span>
       <a href="https://doi.org/10.1021/ed062p446" target="_blank" rel="noopener">10.1021/ed062p446</a>
       <span class="use">以反相 HPLC + UV 外標法定量飲料中咖啡因的教學實驗，與本頁流程相同。</span>
     </span></li>
-    <li id="r14"><span class="n">[14]</span><span>
+    <li id="r16"><span class="n">[16]</span><span>
       <span class="t">Determination of Caffeine in Tea Products by an Improved High-Performance Liquid Chromatography Method.</span>
       <span class="j">Naik J. P., Nagalakshmi S. (1997).
         <i>Journal of Agricultural and Food Chemistry</i>, 45(10), 3973–3975.</span>

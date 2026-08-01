@@ -4,61 +4,68 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>HPLC 咖啡因檢量線與樣品定量</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
-  :root { color-scheme: light dark; }
+  :root{
+    --paper:#FFFFFF; --paper2:#F5F2E9; --ink:#1A1A1A; --soft:#52493b;
+    --teal:#0E7C7B; --cover:#119C9A; --coral:#E36414; --gold:#C8941F; --line:#E4DECC;
+    color-scheme: light;
+  }
   * { box-sizing: border-box; }
   body {
     margin: 0; padding: 2.5rem 1.25rem;
     font-family: "Noto Sans TC", "Microsoft JhengHei", -apple-system, system-ui, sans-serif;
-    line-height: 1.75; color: #1a2236; background: #f7f9fc;
+    line-height: 1.75; color: var(--ink); background: var(--paper);
   }
-  main { max-width: 46rem; margin: 0 auto; }
-  h1 { font-size: 1.75rem; line-height: 1.35; margin: 0 0 .5rem; color: #1f4e79; }
-  .sub { color: #5a6478; margin: 0 0 2rem; }
+  main { max-width: 1080px; margin: 0 auto; }
+  h1 { font-size: 1.9rem; line-height: 1.35; margin: 0 0 .5rem; font-weight: 900; color: var(--ink); }
+  .kicker { color: var(--coral); font-weight: 900; font-size: 14px; letter-spacing: .14em;
+            text-transform: uppercase; margin: 0 0 .6rem; }
+  .sub { color: var(--soft); margin: 0 0 2rem; max-width: 62ch; }
   a.card {
     display: block; text-decoration: none; color: inherit;
-    background: #fff; border: 1px solid #e1e7f0; border-radius: 10px;
-    padding: 1.1rem 1.25rem; margin-bottom: .85rem;
-    transition: border-color .15s, transform .15s;
+    background: var(--paper2); border: 1px solid var(--line); border-radius: 16px;
+    padding: 22px 24px; margin-bottom: .85rem;
+    transition: transform .15s, box-shadow .15s, border-color .15s;
   }
-  a.card:hover { border-color: #2f6feb; transform: translateY(-1px); }
-  a.card strong { display: block; font-size: 1.08rem; color: #1f4e79; margin-bottom: .2rem; }
-  a.card span { color: #5a6478; font-size: .95rem; }
-  h2 { font-size: 1.1rem; margin: 2.25rem 0 .75rem; color: #1f4e79; }
-  code { background: #eef2f8; padding: .12em .4em; border-radius: 4px; font-size: .92em; }
-  pre { background: #12233a; color: #e8eef7; padding: 1rem; border-radius: 8px; overflow-x: auto; }
-  pre code { background: none; padding: 0; color: inherit; }
-  footer { margin-top: 2.5rem; padding-top: 1.25rem; border-top: 1px solid #e1e7f0;
-           color: #5a6478; font-size: .9rem; }
-  a { color: #2f6feb; }
-  @media (prefers-color-scheme: dark) {
-    body { background: #12161f; color: #dde3ee; }
-    h1, h2, a.card strong { color: #7fb0ff; }
-    .sub, a.card span, footer { color: #9aa6b8; }
-    a.card { background: #1a2130; border-color: #2b3446; }
-    code { background: #222b3c; }
-    footer { border-top-color: #2b3446; }
-  }
-  :root[data-theme="dark"] body { background: #12161f; color: #dde3ee; }
-  :root[data-theme="light"] body { background: #f7f9fc; color: #1a2236; }
+  a.card:hover { transform: translateY(-3px); border-color: var(--teal);
+                 box-shadow: 0 10px 24px rgba(26,26,26,.08); }
+  a.card strong { display: block; font-size: 1.1rem; font-weight: 900; color: var(--ink); margin-bottom: .25rem; }
+  a.card span { color: var(--soft); font-size: .95rem; }
+  .pill { display: inline-block; border-radius: 999px; padding: 3px 11px; font-size: .78rem;
+          font-weight: 700; background: var(--teal); color: #fff; margin-right: 8px; }
+  h2 { font-size: 1.15rem; margin: 2.25rem 0 .75rem; font-weight: 900; color: var(--ink); }
+  code { background: var(--paper2); border: 1px solid var(--line); padding: .12em .4em;
+         border-radius: 4px; font-size: .92em; }
+  pre { background: var(--ink); color: #f2ece0; padding: 1rem; border-radius: 12px; overflow-x: auto; }
+  pre code { background: none; border: 0; padding: 0; color: inherit; }
+  footer { margin-top: 2.5rem; padding: 1.5rem 1.5rem 1.25rem; border-radius: 16px;
+           background: var(--ink); color: #cfc8b6; font-size: .9rem; }
+  footer b { color: var(--gold); }
+  footer a { color: #9fd3d2; }
+  a { color: var(--teal); }
+  a:hover { color: var(--cover); }
 </style>
 </head>
 <body>
 <main>
+  <p class="kicker">HPLC 教學系列</p>
   <h1>HPLC 咖啡因檢量線與樣品定量</h1>
   <p class="sub">從 Shimadzu LCsolution 匯出檔建立檢量線、計算樣品咖啡因濃度，
   並示範峰對齊（alignDE）與 airPLS 基線校正。R 與 Python 兩套獨立實作，結果一致。</p>
 
   <a class="card" href="hplc_basic.html">
-    <strong>入門版教學</strong>
+    <strong><span class="pill">入門</span>入門版教學</strong>
     <span>從讀檔到算出濃度的最短路徑，適合第一次接觸 HPLC 定量。</span>
   </a>
   <a class="card" href="hplc_teaching.html">
-    <strong>進階版教學</strong>
+    <strong><span class="pill" style="background:var(--coral)">進階</span>進階版教學</strong>
     <span>判峰邏輯、檢量線診斷、峰對齊與基線校正的完整討論。</span>
   </a>
   <a class="card" href="https://github.com/Tai-ShengYeh/caffeine-hplc">
-    <strong>原始碼與資料</strong>
+    <strong><span class="pill" style="background:var(--gold)">原始碼</span>原始碼與資料</strong>
     <span>GitHub repo：R / Python 程式、10 個層析資料檔、分析輸出。</span>
   </a>
 
@@ -74,7 +81,7 @@ python caffeine_calibration.py     # 或 Rscript caffeine_calibration.R</code></
 
   <footer>
     實驗資料與教材內容依 <a href="https://creativecommons.org/licenses/by/4.0/deed.zh_TW">CC BY 4.0</a> 授權，
-    程式碼依 MIT 授權。© 2026 Tai-Sheng Yeh。<br>
+    程式碼依 MIT 授權。<b>© 2026 Tai-Sheng Yeh。</b><br>
     層析資料採集於 2016/10/14 與 10/17，樣品以編號標示，未指涉任何商品或品牌。
   </footer>
 </main>
