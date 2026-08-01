@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HPLC 咖啡因定量 · 入門版 — 五步驟看懂怎麼算出濃度</title>
+<style>
+:root{
+  --bg:#fbfaf7; --panel:#fff; --ink:#1d2430; --ink2:#4d5866; --ink3:#8b96a5;
+  --line:#e8e6e1; --line2:#cfd4da; --brand:#c0392b; --blue:#2563eb;
+  --ok:#0f9d58; --warn:#d93025; --soft:#f4f2ee; --gold:#fbbf2433;
+}
+@media (prefers-color-scheme:dark){
+  :root{ --bg:#12151a; --panel:#1a1f27; --ink:#e9edf3; --ink2:#aab4c2; --ink3:#6e7987;
+         --line:#252b34; --line2:#3a424e; --brand:#ff7a6b; --blue:#6ba5ff;
+         --ok:#41c98a; --warn:#ff7a70; --soft:#1f242c; --gold:#fbbf2422; }
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:70px}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  font-size:17px;line-height:1.9;-webkit-font-smoothing:antialiased}
+.wrap{max-width:860px;margin:0 auto;padding:0 22px}
+
+nav{position:sticky;top:0;z-index:60;background:color-mix(in srgb,var(--panel) 92%,transparent);
+    backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+nav .wrap{display:flex;align-items:center;gap:6px;height:60px;overflow-x:auto;scrollbar-width:none}
+nav .wrap::-webkit-scrollbar{display:none}
+nav b{font-size:15px;margin-right:12px;white-space:nowrap}
+nav a{color:var(--ink2);text-decoration:none;font-size:14px;padding:7px 12px;
+      border-radius:8px;white-space:nowrap}
+nav a:hover{background:var(--soft);color:var(--ink)}
+nav .adv{margin-left:auto;color:var(--blue);font-size:13.5px;border:1px solid var(--line2)}
+
+header{padding:64px 0 46px;text-align:center}
+header h1{font-size:clamp(28px,5.5vw,44px);line-height:1.3;margin:0 0 8px;letter-spacing:-.02em}
+header .sub{font-size:19px;color:var(--ink2);margin:0 auto;max-width:30ch}
+header .q{display:inline-block;margin-top:30px;background:var(--panel);
+  border:2px solid var(--brand);border-radius:16px;padding:18px 30px;
+  font-size:20px;font-weight:600;line-height:1.6}
+header .q small{display:block;font-size:14.5px;color:var(--ink2);font-weight:400;margin-top:6px}
+
+section{padding:58px 0;border-top:1px solid var(--line)}
+.step-head{display:flex;align-items:center;gap:16px;margin-bottom:8px}
+.badge{flex:none;width:46px;height:46px;border-radius:50%;background:var(--brand);color:#fff;
+  display:grid;place-items:center;font-size:21px;font-weight:700}
+h2{font-size:26px;margin:0;letter-spacing:-.01em;line-height:1.35}
+.lead{font-size:18px;color:var(--ink2);margin:14px 0 26px}
+p{margin:14px 0;color:var(--ink2)}
+strong{color:var(--ink);font-weight:600}
+.big{font-size:19px}
+
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;
+  padding:20px;margin:24px 0}
+.card h3{margin:0 0 12px;font-size:17px}
+figcaption{font-size:14.5px;color:var(--ink3);margin-top:14px;padding-top:14px;
+  border-top:1px solid var(--line);line-height:1.75}
+svg{display:block;width:100%;height:auto;overflow:visible;touch-action:none}
+.axis text{font-size:12px;fill:var(--ink3)}
+.axis line{stroke:var(--line2);shape-rendering:crispEdges}
+.grid line{stroke:var(--line);stroke-dasharray:2 4}
+.alab{font-size:13px;fill:var(--ink2)}
+
+.ctrl{display:flex;flex-wrap:wrap;gap:12px 18px;align-items:center;margin-bottom:16px}
+.ctrl label{display:inline-flex;align-items:center;gap:8px;font-size:15px;color:var(--ink2)}
+input[type=range]{accent-color:var(--brand);width:220px;height:26px;cursor:pointer}
+button.b{background:var(--brand);color:#fff;border:0;border-radius:10px;padding:11px 20px;
+  font:inherit;font-size:15px;font-weight:600;cursor:pointer}
+button.b:hover{filter:brightness(1.08)}
+button.b[disabled]{background:var(--line2);cursor:not-allowed;filter:none}
+button.g{background:transparent;color:var(--ink2);border:1px solid var(--line2);
+  border-radius:10px;padding:10px 18px;font:inherit;font-size:15px;cursor:pointer}
+button.g:hover{background:var(--soft);color:var(--ink)}
+.seg{display:inline-flex;border:1px solid var(--line2);border-radius:10px;overflow:hidden}
+.seg button{background:transparent;border:0;border-right:1px solid var(--line2);
+  color:var(--ink2);font:inherit;font-size:14.5px;padding:9px 15px;cursor:pointer}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed=true]{background:var(--brand);color:#fff}
+
+.stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-top:16px}
+.stat div{background:var(--soft);border-radius:12px;padding:13px 16px;text-align:center}
+.stat span{display:block;font-size:13px;color:var(--ink3)}
+.stat b{font-size:22px;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+
+.key{background:var(--panel);border-left:5px solid var(--brand);border-radius:0 14px 14px 0;
+  padding:18px 22px;margin:26px 0}
+.key b{display:block;font-size:16px;margin-bottom:5px;color:var(--brand)}
+.key p{margin:6px 0;font-size:16.5px}
+.key.blue{border-left-color:var(--blue)} .key.blue b{color:var(--blue)}
+
+.eq{background:var(--soft);border-radius:12px;padding:18px 22px;margin:20px 0;
+  font-size:19px;text-align:center;font-weight:600;line-height:1.9;overflow-x:auto}
+.eq small{display:block;font-size:14px;font-weight:400;color:var(--ink3);margin-top:6px}
+
+table{border-collapse:collapse;width:100%;font-size:15.5px;font-variant-numeric:tabular-nums}
+th,td{padding:11px 13px;text-align:right;border-bottom:1px solid var(--line)}
+th:first-child,td:first-child{text-align:left}
+thead th{color:var(--ink3);font-size:14px;font-weight:600}
+td.big{font-size:19px;font-weight:700;color:var(--brand)}
+.tbl{overflow-x:auto}
+
+/* 小測驗 */
+.quiz{background:var(--panel);border:1px solid var(--line);border-radius:16px;
+  padding:22px;margin:20px 0}
+.quiz .qt{font-size:17.5px;font-weight:600;margin-bottom:14px;line-height:1.7}
+.opt{display:block;width:100%;text-align:left;background:var(--soft);border:2px solid transparent;
+  border-radius:11px;padding:13px 17px;margin:9px 0;font:inherit;font-size:16px;
+  color:var(--ink);cursor:pointer;line-height:1.6}
+.opt:hover{border-color:var(--line2)}
+.opt.right{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,transparent)}
+.opt.wrong{border-color:var(--warn);background:color-mix(in srgb,var(--warn) 12%,transparent)}
+.fb{margin-top:12px;font-size:15.5px;padding:13px 17px;border-radius:11px;
+    background:var(--soft);display:none;line-height:1.75}
+.fb.show{display:block}
+
+.calc{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin:16px 0}
+.calc input{background:var(--panel);border:2px solid var(--line2);border-radius:10px;
+  padding:11px 15px;font:inherit;font-size:17px;width:150px;color:var(--ink);
+  font-variant-numeric:tabular-nums}
+.calc input:focus{outline:none;border-color:var(--brand)}
+
+footer{padding:44px 0 70px;color:var(--ink3);font-size:14.5px;text-align:center}
+footer a{color:var(--blue)}
+.next{display:block;background:var(--panel);border:1px solid var(--line);border-radius:16px;
+  padding:22px 26px;margin:30px 0 0;text-decoration:none;color:inherit}
+.next:hover{border-color:var(--brand)}
+.next b{display:block;font-size:18px;margin-bottom:6px}
+.next span{font-size:15px;color:var(--ink2)}
+@media (max-width:640px){
+  body{font-size:16px}
+  section{padding:42px 0}
+  .badge{width:38px;height:38px;font-size:18px}
+  h2{font-size:21px}
+  .stat b{font-size:18px}
+  .wrap{padding:0 16px}
+  /* 滑桿與輸入框在窄螢幕改為彈性寬度，避免整頁被撐出水平捲軸 */
+  .ctrl{gap:10px 12px}
+  .ctrl label{flex-wrap:wrap;width:100%}
+  input[type=range]{width:100%;flex:1 1 160px;min-width:0}
+  .calc{gap:10px}
+  .calc input{flex:1 1 120px;width:auto;min-width:0}
+  button.b,button.g{flex:0 0 auto}
+  .seg{flex-wrap:wrap}
+  header .q{padding:16px 20px;font-size:18px}
+}
+</style>
+</head>
+<body>
+
+<nav><div class="wrap">
+  <b>HPLC 入門</b>
+  <a href="#s1">1 層析圖</a><a href="#s2">2 峰面積</a><a href="#s3">3 檢量線</a>
+  <a href="#s4">4 測樣品</a><a href="#s5">5 小測驗</a>
+  <a href="hplc_teaching.html" class="adv">進階版 →</a>
+</div></nav>
+
+<header><div class="wrap">
+  <h1>這杯樣品裡<br>有多少咖啡因？</h1>
+  <p class="sub">用真實的 HPLC 儀器資料，五個步驟帶你算出答案。不需要任何背景知識。</p>
+  <div class="q">先講結論：儀器不會直接告訴你濃度
+    <small>它只會給你一張「訊號隨時間變化」的圖。濃度要自己算出來。</small></div>
+</div></header>
+
+<!-- =============================== 1 =============================== -->
+<section id="s1"><div class="wrap">
+  <div class="step-head"><div class="badge">1</div>
+    <h2>層析圖：儀器給你的東西</h2></div>
+  <p class="lead">HPLC 把樣品裡的成分一個一個分開，先出來的先被偵測到。
+     偵測器每 0.5 秒記錄一次訊號，畫成一條線，就是<strong>層析圖</strong>。</p>
+
+  <p class="big">下面是六杯<strong>已知濃度</strong>的咖啡因標準溶液。
+     拖動滑桿換濃度，看看那個峰怎麼變。</p>
+
+  <figure class="card">
+    <div class="ctrl">
+      <label>咖啡因濃度
+        <input type="range" id="s1lam" min="0" max="5" value="3">
+        <b id="s1conc" style="font-size:19px;color:var(--brand);min-width:88px">—</b>
+      </label>
+      <label><input type="checkbox" id="s1keep"> 保留前一條線</label>
+    </div>
+    <svg id="fig1" viewBox="0 0 860 380"></svg>
+    <div class="stat">
+      <div><span>峰出現的時間</span><b id="s1rt">—</b></div>
+      <div><span>峰高</span><b id="s1h">—</b></div>
+      <div><span>峰面積</span><b id="s1a">—</b></div>
+    </div>
+    <figcaption>橫軸是時間（分鐘），縱軸是偵測器訊號。
+      勾選「保留前一條線」再拉滑桿，六條線會疊在一起，高低差一目了然。</figcaption>
+  </figure>
+
+  <div class="key"><b>觀察到什麼？</b>
+    <p>① 峰<strong>永遠出現在 4.6 分鐘左右</strong>——這是咖啡因的「身分證」，每個化合物都有自己固定的出場時間。</p>
+    <p>② 濃度越高，峰<strong>越高也越胖</strong>。這就是我們能拿來定量的線索。</p>
+    <p>③ 0 ppm 那一杯（純溶劑）在 4.6 分鐘<strong>完全沒有峰</strong>——證明那個峰真的是咖啡因，不是雜質。</p>
+  </div>
+</div></section>
+
+<!-- =============================== 2 =============================== -->
+<section id="s2"><div class="wrap">
+  <div class="step-head"><div class="badge">2</div>
+    <h2>峰面積：代表「有多少」</h2></div>
+  <p class="lead">峰高和峰面積都會隨濃度變大，但實務上我們一律用<strong>面積</strong>。為什麼？</p>
+
+  <figure class="card">
+    <h3>把峰底下塗滿，那塊面積就是答案</h3>
+    <div class="ctrl">
+      <div class="seg" id="s2mode">
+        <button data-m="h" aria-pressed="true">看峰高</button>
+        <button data-m="a" aria-pressed="false">看峰面積</button>
+      </div>
+      <button class="g" id="s2wide">變胖看看 →</button>
+    </div>
+    <svg id="fig2" viewBox="0 0 860 360"></svg>
+    <div class="stat">
+      <div><span>峰高</span><b id="s2h">—</b></div>
+      <div><span>峰面積</span><b id="s2a">—</b></div>
+      <div><span>與原本相比</span><b id="s2d">—</b></div>
+    </div>
+    <figcaption>按「變胖看看」會把峰壓扁變寬（模擬管柱老化或樣品基質的影響）。
+      注意峰高掉了不少，但面積幾乎不變。</figcaption>
+  </figure>
+
+  <div class="key"><b>為什麼用面積不用峰高</b>
+    <p>峰形變寬時，<strong>峰高會掉，但面積不變</strong>——因為分子總數沒變，只是散開了。
+       面積像「水桶裡的水量」，峰高只是「水位」；桶子變寬水位就降，水量卻一樣。</p>
+  </div>
+
+  <div class="key blue"><b>面積怎麼算出來的</b>
+    <p>把峰底下的區域切成很多細長條，一條一條加起來——就是數學課的「積分」。
+       儀器會自動做這件事，你只要知道它算的是<strong>訊號線和基線之間圍出的面積</strong>。</p>
+  </div>
+</div></section>
+
+<!-- =============================== 3 =============================== -->
+<section id="s3"><div class="wrap">
+  <div class="step-head"><div class="badge">3</div>
+    <h2>檢量線：把面積翻譯成濃度</h2></div>
+  <p class="lead">已知六杯的濃度，也量到六個面積。把它們畫成點，會排成一直線——
+     這條線就是<strong>檢量線</strong>，之後所有未知樣品都靠它換算。</p>
+
+  <p class="big">按按鈕，一次加一個標準品進去。</p>
+
+  <figure class="card">
+    <div class="ctrl">
+      <button class="b" id="s3add">加入第一個標準品</button>
+      <button class="g" id="s3reset">重來</button>
+    </div>
+    <svg id="fig3" viewBox="0 0 860 400"></svg>
+    <div class="stat">
+      <div><span>已加入的點</span><b id="s3n">0 / 6</b></div>
+      <div><span>檢量線公式</span><b id="s3eq" style="font-size:14px">—</b></div>
+      <div><span>線有多直（R²）</span><b id="s3r2">—</b></div>
+    </div>
+    <figcaption>加到第 2 個點才畫得出線。R² 越接近 1，代表點越貼合直線；
+      一般要求 R² ≥ 0.995 才算可以用。</figcaption>
+  </figure>
+
+  <div class="key"><b>檢量線在說什麼</b>
+    <p><b>面積 = 斜率 × 濃度 + 截距</b>。斜率代表「每 1 ppm 能換到多少面積」，
+       也就是這台儀器對咖啡因有多<strong>靈敏</strong>。</p>
+    <p>把公式反過來，就能從面積算回濃度——這正是下一步要做的事。</p>
+  </div>
+</div></section>
+
+<!-- =============================== 4 =============================== -->
+<section id="s4"><div class="wrap">
+  <div class="step-head"><div class="badge">4</div>
+    <h2>量未知樣品</h2></div>
+  <p class="lead">未知樣品用一模一樣的條件跑一次，量到面積，再拿去檢量線上「查表」。</p>
+
+  <figure class="card">
+    <div class="ctrl"><div class="seg" id="s4pick"></div></div>
+    <svg id="fig4" viewBox="0 0 860 400"></svg>
+    <div class="stat">
+      <div><span>量到的峰面積</span><b id="s4a">—</b></div>
+      <div><span>算出的濃度</span><b id="s4c" style="color:var(--brand)">—</b></div>
+    </div>
+    <figcaption>從左邊 y 軸的面積往右走，碰到紅線後往下掉，落點就是濃度。</figcaption>
+  </figure>
+
+  <div class="eq">濃度 = ( 面積 − 截距 ) ÷ 斜率
+    <small>就是把檢量線的公式反過來解</small></div>
+  <div class="eq" id="eqReal" style="font-size:17px">—
+    <small id="eqNote">—</small></div>
+
+  <div class="card">
+    <h3>換你算算看</h3>
+    <p>假設某個樣品量到的峰面積是 <b id="calcArea" style="color:var(--brand)">—</b>，
+       用上面的公式算出濃度是多少 ppm？（取到小數點後一位）</p>
+    <div class="calc">
+      <input type="number" id="calcIn" placeholder="輸入答案" step="0.1">
+      <button class="b" id="calcGo">對答案</button>
+      <button class="g" id="calcNew">換一題</button>
+    </div>
+    <div class="fb" id="calcFb"></div>
+  </div>
+</div></section>
+
+<!-- =============================== 5 =============================== -->
+<section id="s5"><div class="wrap">
+  <div class="step-head"><div class="badge">5</div>
+    <h2>小測驗</h2></div>
+  <p class="lead">三題就好。答錯沒關係，會告訴你為什麼。</p>
+  <div id="quizBox"></div>
+</div></section>
+
+<!-- =============================== 結果 =============================== -->
+<section id="s6"><div class="wrap">
+  <div class="step-head"><div class="badge">✓</div><h2>最後的答案</h2></div>
+  <p class="lead">四個未知樣品的咖啡因濃度：</p>
+  <div class="card tbl"><table id="finalTbl">
+    <thead><tr><th>樣品</th><th>峰出現時間 (分)</th><th>峰面積</th><th>咖啡因濃度 (ppm)</th></tr></thead>
+    <tbody></tbody>
+  </table></div>
+
+  <div class="key blue"><b>ppm 是什麼單位</b>
+    <p>1 ppm = 1 µg/mL = 每毫升含 1 微克。所以 <b id="unitEx">—</b> ppm 的溶液，
+       每 250 mL 大約含 <b id="unitMg">—</b> 毫克咖啡因。</p>
+    <p style="font-size:15px;color:var(--ink3)">註：這是<strong>注射進儀器那一管</strong>的濃度。
+       實際飲料通常會先稀釋再上機，所以原始飲料的濃度要再乘上稀釋倍數。</p>
+  </div>
+
+  <div class="key"><b>整個流程回顧</b>
+    <p>① 跑一系列<strong>已知濃度</strong>的標準品 → ② 量每個峰的<strong>面積</strong>
+       → ③ 畫出<strong>檢量線</strong> → ④ 樣品用同樣條件跑一次
+       → ⑤ 用檢量線<strong>反推濃度</strong>。</p>
+    <p>所有儀器分析的定量，幾乎都是這五步。</p>
+  </div>
+
+  <a class="next" href="hplc_teaching.html">
+    <b>想再深入一點？→ 進階版</b>
+    <span>基線要畫在哪裡、滯留時間漂移了怎麼校正（airPLS、alignDE）、
+      R² 高為什麼還不夠、偵測極限怎麼算、儀器自動判峰為什麼會錯——
+      進階版有九個步驟和 14 篇參考文獻。</span>
+  </a>
+</div></section>
+
+<footer><div class="wrap">
+  資料來源：Shimadzu LabSolutions 實測層析圖（6 個標準品 + 4 個樣品，280 nm，注射 10 µL）。
+  本頁所有圖形由原始資料即時繪製。
+</div></footer>
+
+<script>
+"use strict";
+const DATA = /*__HPLC_DATA__*/{};
+const NS = "http://www.w3.org/2000/svg";
+const M = DATA.meta;
+const RUNS = {}; DATA.runs.forEach(r => RUNS[r.id] = r);
+const STDS = DATA.runs.filter(r => r.kind === "std");
+const SAMPS = DATA.runs.filter(r => r.kind === "sample");
+
+const tOf = i => i * M.tEnd / (M.nPoints - 1);
+const iOf = t => t * (M.nPoints - 1) / M.tEnd;
+const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
+const fmt = (v,d=0) => v.toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d});
+
+function el(tag, attrs, parent){
+  const n = document.createElementNS(NS, tag);
+  for (const k in attrs) n.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(n);
+  return n;
+}
+function clear(svg){ while (svg.firstChild) svg.removeChild(svg.firstChild); }
+function sc(d0,d1,r0,r1){ return v => r0 + (v-d0)/(d1-d0)*(r1-r0); }
+function niceTicks(lo, hi, n){
+  const raw = (hi-lo)/n, mag = Math.pow(10, Math.floor(Math.log10(raw)));
+  const nm = raw/mag, step = mag * (nm<1.5?1:nm<3?2:nm<7?5:10);
+  const out = []; for (let v = Math.ceil(lo/step)*step; v <= hi+1e-9; v += step) out.push(v);
+  return out;
+}
+function axes(svg, x, y, xd, yd, pad, xlab, ylab, yfmt){
+  const g = el("g",{class:"axis"},svg), gg = el("g",{class:"grid"},svg);
+  niceTicks(xd[0],xd[1],6).forEach(v=>{
+    el("line",{x1:x(v),y1:pad.t,x2:x(v),y2:pad.h-pad.b},gg);
+    const t = el("text",{x:x(v),y:pad.h-pad.b+20,"text-anchor":"middle"},g);
+    t.textContent = Math.abs(v)<1e-9 ? "0" : (Math.abs(v)<10 ? (+v.toFixed(1)).toString() : fmt(v));
+  });
+  niceTicks(yd[0],yd[1],5).forEach(v=>{
+    el("line",{x1:pad.l,y1:y(v),x2:pad.w-pad.r,y2:y(v)},gg);
+    const t = el("text",{x:pad.l-10,y:y(v)+4,"text-anchor":"end"},g);
+    t.textContent = yfmt ? yfmt(v) : fmt(v);
+  });
+  el("line",{x1:pad.l,y1:pad.h-pad.b,x2:pad.w-pad.r,y2:pad.h-pad.b},g);
+  el("line",{x1:pad.l,y1:pad.t,x2:pad.l,y2:pad.h-pad.b},g);
+  let t = el("text",{x:(pad.l+pad.w-pad.r)/2,y:pad.h-3,"text-anchor":"middle",class:"alab"},svg);
+  t.textContent = xlab;
+  t = el("text",{x:15,y:(pad.t+pad.h-pad.b)/2,"text-anchor":"middle",class:"alab",
+    transform:`rotate(-90 15 ${(pad.t+pad.h-pad.b)/2})`},svg);
+  t.textContent = ylab;
+}
+/* 全體檢量線（與進階版、R/Python 程式一致） */
+const CAL = (() => {
+  const xs = STDS.map(r => r.conc), ys = STDS.map(r => r.caf ? r.caf.area : 0);
+  const n = xs.length, mx = xs.reduce((a,b)=>a+b,0)/n, my = ys.reduce((a,b)=>a+b,0)/n;
+  const b1 = xs.reduce((a,x,i)=>a+(x-mx)*(ys[i]-my),0) / xs.reduce((a,x)=>a+(x-mx)*(x-mx),0);
+  const b0 = my - b1*mx;
+  return { xs, ys, b0, b1 };
+})();
+function fitOf(k){                       // 只用前 k 個標準品做迴歸
+  const xs = CAL.xs.slice(0,k), ys = CAL.ys.slice(0,k), n = k;
+  if (n < 2) return null;
+  const mx = xs.reduce((a,b)=>a+b,0)/n, my = ys.reduce((a,b)=>a+b,0)/n;
+  const sxx = xs.reduce((a,x)=>a+(x-mx)*(x-mx),0);
+  if (sxx === 0) return null;
+  const b1 = xs.reduce((a,x,i)=>a+(x-mx)*(ys[i]-my),0)/sxx;
+  const b0 = my - b1*mx;
+  const ssr = ys.reduce((a,v,i)=>a+Math.pow(v-(b0+b1*xs[i]),2),0);
+  const sst = ys.reduce((a,v)=>a+Math.pow(v-my,2),0);
+  return { b0, b1, r2: sst === 0 ? 1 : 1-ssr/sst };
+}
+
+/* ============================ 1 · 層析圖 ============================ */
+(function fig1(){
+  const svg = document.getElementById("fig1");
+  const sl = document.getElementById("s1lam");
+  const keep = document.getElementById("s1keep");
+  const shown = new Set();
+  const pad = {l:74,r:18,t:20,b:48,w:860,h:380};
+  const LO = 3.6, HI = 5.6;
+
+  sl.addEventListener("input", draw);
+  keep.addEventListener("change", () => { shown.clear(); draw(); });
+
+  function draw(){
+    clear(svg);
+    const k = +sl.value, r = STDS[k];
+    if (keep.checked) shown.add(k); else shown.clear();
+    shown.add(k);
+    const ymax = Math.max(...STDS.map(s => {
+      let m = 0; for (let i = Math.floor(iOf(LO)); i <= iOf(HI); i++) m = Math.max(m, s.y[i]/1000);
+      return m; })) * 1.1;
+    const x = sc(LO, HI, pad.l, pad.w-pad.r);
+    const y = sc(-ymax*0.05, ymax, pad.h-pad.b, pad.t);
+    axes(svg, x, y, [LO,HI], [0,ymax], pad, "時間（分鐘）", "偵測器訊號 (mV)");
+
+    [...shown].sort().forEach(idx => {
+      const s = STDS[idx], cur = idx === k;
+      let d = "";
+      for (let i = Math.floor(iOf(LO)); i <= Math.ceil(iOf(HI)); i++)
+        d += (d?"L":"M") + x(tOf(i)).toFixed(1) + " " + y(s.y[i]/1000).toFixed(1);
+      if (cur){
+        el("path",{d: d + `L${x(HI)} ${y(0)} L${x(LO)} ${y(0)} Z`,
+          fill:"var(--brand)", opacity:.13}, svg);
+      }
+      el("path",{d, stroke: cur ? "var(--brand)" : "var(--ink3)",
+        "stroke-width": cur ? 3 : 1.5, fill:"none", opacity: cur ? 1 : .55}, svg);
+      if (!cur){
+        let bi = 0, bv = -Infinity;
+        for (let i = Math.floor(iOf(LO)); i <= iOf(HI); i++) if (s.y[i] > bv){ bv = s.y[i]; bi = i; }
+        const t = el("text",{x:x(tOf(bi))+8, y:y(bv/1000)-4,"font-size":11.5,fill:"var(--ink3)"},svg);
+        t.textContent = s.conc + " ppm";
+      }
+    });
+
+    document.getElementById("s1conc").textContent = r.conc + " ppm";
+    if (r.caf){
+      document.getElementById("s1rt").textContent = r.caf.rt.toFixed(2) + " 分";
+      document.getElementById("s1h").textContent = fmt(r.caf.h/1000, 0) + " mV";
+      document.getElementById("s1a").textContent = fmt(r.caf.area);
+    } else {
+      document.getElementById("s1rt").textContent = "沒有峰";
+      document.getElementById("s1h").textContent = "0";
+      document.getElementById("s1a").textContent = "0";
+    }
+  }
+  draw();
+})();
+
+/* ============================ 2 · 峰面積 ============================ */
+(function fig2(){
+  const svg = document.getElementById("fig2");
+  const wideBtn = document.getElementById("s2wide");
+  let mode = "h", wide = false;
+  document.querySelectorAll("#s2mode button").forEach(b =>
+    b.addEventListener("click", () => {
+      document.querySelectorAll("#s2mode button").forEach(o => o.setAttribute("aria-pressed","false"));
+      b.setAttribute("aria-pressed","true"); mode = b.dataset.m; draw();
+    }));
+  wideBtn.addEventListener("click", () => {
+    wide = !wide;
+    wideBtn.textContent = wide ? "← 變回原本" : "變胖看看 →";
+    draw();
+  });
+
+  const base = RUNS["std-100"];
+  const pad = {l:74,r:18,t:20,b:48,w:860,h:360};
+  const LO = 3.8, HI = 5.6, APEX = 4.656;
+  // 峰形變寬：以峰頂為中心把時間軸拉開 1.75 倍，高度按面積守恆等比壓低
+  const K = 1.75;
+  const val = t => {
+    if (!wide) return base.y[clamp(Math.round(iOf(t)),0,M.nPoints-1)];
+    const src = APEX + (t - APEX)/K;
+    const i = clamp(Math.round(iOf(src)),0,M.nPoints-1);
+    return base.y[i] / K;
+  };
+
+  function draw(){
+    clear(svg);
+    const N = 400;
+    const ts = Array.from({length:N}, (_,i) => LO + (HI-LO)*i/(N-1));
+    const vs = ts.map(t => val(t)/1000);
+    const ymax = Math.max(...ts.map(t => val(t)))/1000 * 1.18;
+    const x = sc(LO, HI, pad.l, pad.w-pad.r);
+    const y = sc(-ymax*0.05, ymax, pad.h-pad.b, pad.t);
+    axes(svg, x, y, [LO,HI], [0,ymax], pad, "時間（分鐘）", "偵測器訊號 (mV)");
+
+    let d = "";
+    ts.forEach((t,i) => { d += (i?"L":"M") + x(t).toFixed(1) + " " + y(vs[i]).toFixed(1); });
+    if (mode === "a")
+      el("path",{d: d + `L${x(HI)} ${y(0)} L${x(LO)} ${y(0)} Z`, fill:"var(--brand)", opacity:.28}, svg);
+    el("path",{d, stroke:"var(--brand)","stroke-width":3, fill:"none"}, svg);
+
+    let bi = 0; vs.forEach((v,i) => { if (v > vs[bi]) bi = i; });
+    if (mode === "h"){
+      el("line",{x1:x(ts[bi]), y1:y(0), x2:x(ts[bi]), y2:y(vs[bi]),
+        stroke:"var(--blue)","stroke-width":3}, svg);
+      el("line",{x1:x(LO), y1:y(vs[bi]), x2:x(ts[bi]), y2:y(vs[bi]),
+        stroke:"var(--blue)","stroke-width":1.6,"stroke-dasharray":"5 4"}, svg);
+      const t = el("text",{x:x(ts[bi])+10, y:y(vs[bi]/2),"font-size":14,
+        fill:"var(--blue)","font-weight":600}, svg);
+      t.textContent = "峰高";
+    } else {
+      const t = el("text",{x:x(ts[bi]), y:y(vs[bi]*0.42),"text-anchor":"middle",
+        "font-size":16, fill:"var(--brand)","font-weight":700}, svg);
+      t.textContent = "峰面積";
+    }
+
+    // 讀數（以固定視窗梯形積分）
+    const dt = (HI-LO)/(N-1) * 60;
+    const area = dt * (vs.reduce((a,b)=>a+b,0)*1000 - (vs[0]+vs[N-1])*500);
+    const h = vs[bi]*1000;
+    document.getElementById("s2h").textContent = fmt(h/1000,0) + " mV";
+    document.getElementById("s2a").textContent = fmt(area);
+    const dEl = document.getElementById("s2d");
+    if (!wide){ dEl.textContent = "原本"; dEl.style.color = "var(--ink)"; }
+    else {
+      dEl.innerHTML = `峰高 −${((1-1/K)*100).toFixed(0)}%<br>` +
+        `<span style="color:var(--ok)">面積幾乎不變</span>`;
+      dEl.style.fontSize = "15px";
+    }
+  }
+  draw();
+})();
+
+/* ============================ 3 · 檢量線 ============================ */
+(function fig3(){
+  const svg = document.getElementById("fig3");
+  const addBtn = document.getElementById("s3add");
+  const resetBtn = document.getElementById("s3reset");
+  let k = 0;
+  addBtn.addEventListener("click", () => { if (k < 6){ k++; draw(); } });
+  resetBtn.addEventListener("click", () => { k = 0; draw(); });
+
+  const pad = {l:86,r:18,t:22,b:50,w:860,h:400};
+  function draw(){
+    clear(svg);
+    const xmax = 215, ymax = Math.max(...CAL.ys)*1.1;
+    const x = sc(-8, xmax, pad.l, pad.w-pad.r);
+    const y = sc(-ymax*0.05, ymax, pad.h-pad.b, pad.t);
+    axes(svg, x, y, [0,xmax], [0,ymax], pad, "咖啡因濃度 (ppm)", "峰面積",
+         v => (v/1e6).toFixed(0)+"百萬");
+
+    const fit = fitOf(k);
+    if (fit){
+      el("line",{x1:x(-8), y1:y(fit.b0+fit.b1*(-8)), x2:x(xmax), y2:y(fit.b0+fit.b1*xmax),
+        stroke:"var(--brand)","stroke-width":3}, svg);
+    }
+    for (let i = 0; i < k; i++){
+      el("circle",{cx:x(CAL.xs[i]), cy:y(CAL.ys[i]), r:8,
+        fill:"var(--panel)", stroke:"var(--ink)","stroke-width":3}, svg);
+      const t = el("text",{x:x(CAL.xs[i]), y:y(CAL.ys[i])+26,"text-anchor":"middle",
+        "font-size":13, fill:"var(--ink2)"}, svg);
+      t.textContent = CAL.xs[i] + " ppm";
+    }
+    if (k === 0){
+      const t = el("text",{x:(pad.l+pad.w-pad.r)/2, y:(pad.t+pad.h-pad.b)/2,
+        "text-anchor":"middle","font-size":17, fill:"var(--ink3)"}, svg);
+      t.textContent = "按「加入第一個標準品」開始";
+    }
+
+    document.getElementById("s3n").textContent = k + " / 6";
+    addBtn.textContent = k === 0 ? "加入第一個標準品"
+                       : k < 6 ? `加入第 ${k+1} 個標準品（${CAL.xs[k]} ppm）` : "六個都加完了";
+    addBtn.disabled = k >= 6;
+    document.getElementById("s3eq").textContent = fit
+      ? `面積 = ${fmt(fit.b1)} × 濃度 ${fit.b0>=0?"+":"−"} ${fmt(Math.abs(fit.b0))}`
+      : "至少要 2 個點";
+    const r2El = document.getElementById("s3r2");
+    r2El.textContent = fit ? fit.r2.toFixed(4) : "—";
+    r2El.style.color = fit && fit.r2 >= 0.995 ? "var(--ok)" : "var(--ink)";
+  }
+  draw();
+})();
+
+/* ============================ 4 · 測樣品 ============================ */
+let QUIZ_CONC = [];
+(function fig4(){
+  const svg = document.getElementById("fig4");
+  const seg = document.getElementById("s4pick");
+  let active = 0, anim = 0, timer = null;
+
+  SAMPS.forEach((r,i) => {
+    const b = document.createElement("button");
+    b.textContent = r.id; b.setAttribute("aria-pressed", i===0?"true":"false");
+    b.addEventListener("click", () => {
+      seg.querySelectorAll("button").forEach(o => o.setAttribute("aria-pressed","false"));
+      b.setAttribute("aria-pressed","true"); active = i; play();
+    });
+    seg.appendChild(b);
+  });
+
+  const pad = {l:86,r:18,t:22,b:50,w:860,h:400};
+  function play(){ anim = 0; clearInterval(timer);
+    timer = setInterval(() => { anim = Math.min(1, anim+0.03); draw();
+      if (anim >= 1) clearInterval(timer); }, 16); }
+
+  function draw(){
+    clear(svg);
+    const r = SAMPS[active], area = r.caf.area;
+    const conc = (area - CAL.b0)/CAL.b1;
+    const xmax = 215, ymax = Math.max(...CAL.ys, area)*1.1;
+    const x = sc(-8, xmax, pad.l, pad.w-pad.r);
+    const y = sc(-ymax*0.05, ymax, pad.h-pad.b, pad.t);
+    axes(svg, x, y, [0,xmax], [0,ymax], pad, "咖啡因濃度 (ppm)", "峰面積",
+         v => (v/1e6).toFixed(0)+"百萬");
+    el("line",{x1:x(-8), y1:y(CAL.b0+CAL.b1*(-8)), x2:x(xmax), y2:y(CAL.b0+CAL.b1*xmax),
+      stroke:"var(--brand)","stroke-width":3}, svg);
+    CAL.xs.forEach((c,i) => el("circle",{cx:x(c), cy:y(CAL.ys[i]), r:6,
+      fill:"var(--panel)", stroke:"var(--ink)","stroke-width":2.4}, svg));
+
+    const p1 = clamp(anim/0.5,0,1), p2 = clamp((anim-0.5)/0.5,0,1);
+    el("line",{x1:x(-8), y1:y(area), x2:x(-8)+(x(conc)-x(-8))*p1, y2:y(area),
+      stroke:"var(--blue)","stroke-width":3.4,"stroke-dasharray":"8 5"}, svg);
+    let t = el("text",{x:x(-8)+10, y:y(area)-12,"font-size":14.5,
+      fill:"var(--blue)","font-weight":700}, svg);
+    t.textContent = `① 量到面積 ${fmt(area)}`;
+    if (p2 > 0){
+      el("line",{x1:x(conc), y1:y(area), x2:x(conc), y2:y(area)+(y(0)-y(area))*p2,
+        stroke:"var(--blue)","stroke-width":3.4,"stroke-dasharray":"8 5"}, svg);
+      el("circle",{cx:x(conc), cy:y(area), r:8, fill:"var(--blue)"}, svg);
+      t = el("text",{x:x(conc)+12, y:y(area)+30,"font-size":14, fill:"var(--blue)"}, svg);
+      t.textContent = "② 碰到檢量線";
+    }
+    if (p2 >= 1){
+      t = el("text",{x:x(conc), y:pad.h-pad.b-12,"text-anchor":"middle","font-size":17,
+        fill:"var(--brand)","font-weight":700}, svg);
+      t.textContent = `③ ${conc.toFixed(1)} ppm`;
+    }
+    document.getElementById("s4a").textContent = fmt(area);
+    document.getElementById("s4c").textContent = conc.toFixed(1) + " ppm";
+  }
+  play();
+  QUIZ_CONC = SAMPS.map(r => (r.caf.area - CAL.b0)/CAL.b1);
+
+  /* ---- 代入本例數字的公式 ---- */
+  (function realEq(){
+    const b0r = Math.round(CAL.b0);
+    document.getElementById("eqReal").firstChild.textContent =
+      `濃度 = ( 面積 ${b0r >= 0 ? "−" : "+"} ${fmt(Math.abs(b0r))} ) ÷ ${fmt(CAL.b1)}`;
+    document.getElementById("eqNote").textContent = b0r >= 0
+      ? "代入這條檢量線的截距與斜率"
+      : `這條線的截距是 ${fmt(b0r)}（負數），所以「減去截距」變成加上 ${fmt(Math.abs(b0r))}`;
+  })();
+
+  /* ---- 換你算算看 ---- */
+  const areaEl = document.getElementById("calcArea");
+  const inEl = document.getElementById("calcIn");
+  const fbEl = document.getElementById("calcFb");
+  let target = 0;
+  function newQ(){
+    // 在檢量線範圍內取一個好算的整數濃度
+    const picks = [30, 45, 60, 75, 95, 110, 125, 140, 165, 180];
+    const c = picks[Math.floor((Date.now()/1000 + picks.length) % picks.length)];
+    target = c;
+    areaEl.textContent = fmt(Math.round(CAL.b0 + CAL.b1*c));
+    inEl.value = ""; fbEl.className = "fb";
+  }
+  document.getElementById("calcNew").addEventListener("click", newQ);
+  // 本例截距是負的，直接寫成「減去負數」會出現雙重負號，改成加法呈現
+  const b0 = Math.round(CAL.b0);
+  const OP = b0 >= 0 ? "−" : "+";
+  const ABS0 = fmt(Math.abs(b0));
+  const work = () => `(${areaEl.textContent} ${OP} ${ABS0}) ÷ ${fmt(CAL.b1)} = ${target}`;
+
+  document.getElementById("calcGo").addEventListener("click", () => {
+    const v = parseFloat(inEl.value);
+    fbEl.className = "fb show";
+    if (isNaN(v)){ fbEl.innerHTML = "請先輸入一個數字。"; return; }
+    if (Math.abs(v - target) <= 1.5){
+      fbEl.innerHTML = `<b style="color:var(--ok)">答對了！</b> 正確答案是 ${target} ppm。` +
+        `<br>算法：${work()}`;
+    } else {
+      fbEl.innerHTML = `<b style="color:var(--warn)">再試一次。</b>正確答案是 ${target} ppm。` +
+        `<br>算法：${work()}` +
+        `<br><span style="color:var(--ink3);font-size:14.5px">` +
+        `這條檢量線的截距是 ${fmt(b0)}（負數），所以「減去截距」實際上是<b>加上 ${ABS0}</b>。</span>`;
+    }
+  });
+  newQ();
+})();
+
+/* ============================ 5 · 小測驗 ============================ */
+(function quiz(){
+  const box = document.getElementById("quizBox");
+  const QS = [
+    { q: "為什麼定量時要用「峰面積」而不是「峰高」？",
+      opts: ["面積的數字比較大，比較準",
+             "峰形變寬時峰高會掉，但面積不變",
+             "儀器只能算面積，算不出峰高"],
+      ans: 1,
+      why: "峰變寬時分子總數沒變，只是散開了——面積守恆但峰高會降。管柱老化或樣品基質都會讓峰變寬，這時用峰高定量就會低估。" },
+    { q: "0 ppm 的空白溶液在 4.6 分鐘完全沒有峰。這件事最重要的意義是什麼？",
+      opts: ["證明儀器沒壞",
+             "證明 4.6 分鐘的那個峰真的來自咖啡因，不是溶劑或雜質",
+             "代表可以不用跑空白"],
+      ans: 1,
+      why: "空白是用來確認「這個位置的訊號確實來自待測物」。如果空白在同一個時間也有峰，就表示有干擾，所有結果都要重新檢討。" },
+    { q: "某個樣品量到的面積，比最高濃度標準品（200 ppm）還大。該怎麼做？",
+      opts: ["直接把檢量線延長出去讀數值",
+             "把樣品稀釋後重測，讓它落回檢量線範圍內",
+             "改用最高的那個標準品當答案"],
+      ans: 1,
+      why: "檢量線只在做過的濃度範圍內被驗證過。超出範圍叫「外插」，那一段偵測器可能已經不是線性的，算出來的數字沒有依據。正確做法是稀釋後重測，再把結果乘回稀釋倍數。" }
+  ];
+
+  QS.forEach((it, qi) => {
+    const d = document.createElement("div");
+    d.className = "quiz";
+    d.innerHTML = `<div class="qt">Q${qi+1}. ${it.q}</div>`;
+    const fb = document.createElement("div");
+    fb.className = "fb";
+    it.opts.forEach((o, oi) => {
+      const b = document.createElement("button");
+      b.className = "opt"; b.textContent = o;
+      b.addEventListener("click", () => {
+        if (d.dataset.done) return;
+        d.dataset.done = "1";
+        d.querySelectorAll(".opt").forEach((x, xi) => {
+          if (xi === it.ans) x.classList.add("right");
+          else if (xi === oi) x.classList.add("wrong");
+        });
+        fb.className = "fb show";
+        fb.innerHTML = (oi === it.ans
+          ? '<b style="color:var(--ok)">答對了。</b> '
+          : '<b style="color:var(--warn)">正確答案是綠色那個。</b> ') + it.why;
+      });
+      d.appendChild(b);
+    });
+    d.appendChild(fb);
+    box.appendChild(d);
+  });
+})();
+
+/* ============================ 結果表 ============================ */
+(function results(){
+  const tb = document.querySelector("#finalTbl tbody");
+  SAMPS.forEach((r,i) => {
+    const c = QUIZ_CONC[i];
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td>${r.id}</td><td>${r.caf.rt.toFixed(2)}</td>` +
+      `<td>${fmt(r.caf.area)}</td><td class="big">${c.toFixed(1)}</td>`;
+    tb.appendChild(tr);
+  });
+  const c0 = QUIZ_CONC[0];
+  document.getElementById("unitEx").textContent = c0.toFixed(0);
+  document.getElementById("unitMg").textContent = (c0 * 250 / 1000).toFixed(0);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1569 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HPLC 咖啡因定量互動教學 — 層析圖、峰積分與檢量線</title>
+<style>
+:root{
+  --bg:#f7f8fa; --panel:#ffffff; --ink:#1a2233; --ink2:#4a5568; --ink3:#8492a6;
+  --line:#e2e8f0; --line2:#cbd5e1; --accent:#c0392b; --accent2:#2563eb;
+  --band:#fbbf2422; --ok:#059669; --warn:#dc2626; --code:#f1f5f9;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#0e1218; --panel:#161c25; --ink:#e6ebf2; --ink2:#a8b3c4; --ink3:#6b7a90;
+    --line:#242c38; --line2:#394454; --accent:#ff6b5b; --accent2:#60a5fa;
+    --band:#fbbf2418; --ok:#34d399; --warn:#f87171; --code:#1b222c;
+  }
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:64px}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,-apple-system,"Segoe UI",sans-serif;
+  line-height:1.75;-webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+
+/* ---------- nav ---------- */
+nav{position:sticky;top:0;z-index:50;background:color-mix(in srgb,var(--panel) 88%,transparent);
+    backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+nav .wrap{display:flex;gap:4px;align-items:center;height:56px;overflow-x:auto;scrollbar-width:none}
+nav .wrap::-webkit-scrollbar{display:none}
+nav b{font-size:14px;margin-right:14px;white-space:nowrap;letter-spacing:.02em}
+nav a{color:var(--ink2);text-decoration:none;font-size:13.5px;padding:6px 11px;border-radius:7px;white-space:nowrap}
+nav a:hover{background:var(--line);color:var(--ink)}
+
+/* ---------- hero ---------- */
+header{padding:56px 0 40px;border-bottom:1px solid var(--line)}
+header h1{font-size:clamp(26px,4.4vw,40px);line-height:1.28;margin:0 0 14px;letter-spacing:-.01em}
+header p{font-size:17px;color:var(--ink2);margin:0;max-width:62ch}
+.tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px}
+.tag{font-size:12.5px;padding:4px 11px;border:1px solid var(--line2);border-radius:99px;color:var(--ink2)}
+
+/* ---------- sections ---------- */
+section{padding:52px 0;border-bottom:1px solid var(--line)}
+section:last-of-type{border-bottom:0}
+h2{font-size:24px;margin:0 0 6px;letter-spacing:-.01em;display:flex;align-items:baseline;gap:12px}
+h2 .num{font-size:13px;color:var(--accent);font-weight:700;letter-spacing:.12em}
+h3{font-size:16.5px;margin:30px 0 10px}
+p{margin:12px 0;color:var(--ink2)}
+.lead{font-size:16px;color:var(--ink2);max-width:66ch;margin-bottom:24px}
+strong{color:var(--ink);font-weight:600}
+
+/* ---------- figure panels ---------- */
+.fig{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;margin:22px 0}
+.fig figcaption{font-size:13px;color:var(--ink3);margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+.ctrl{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin-bottom:14px;font-size:13.5px}
+.ctrl label{display:inline-flex;align-items:center;gap:6px;cursor:pointer;color:var(--ink2)}
+.ctrl input[type=checkbox]{accent-color:var(--accent2);width:15px;height:15px;cursor:pointer}
+.ctrl input[type=range]{accent-color:var(--accent);width:170px;cursor:pointer}
+.ctrl select{background:var(--panel);color:var(--ink);border:1px solid var(--line2);
+             border-radius:7px;padding:5px 9px;font:inherit;font-size:13.5px;cursor:pointer}
+.seg{display:inline-flex;border:1px solid var(--line2);border-radius:8px;overflow:hidden}
+.seg button{background:transparent;border:0;color:var(--ink2);font:inherit;font-size:13px;
+            padding:6px 13px;cursor:pointer;border-right:1px solid var(--line2)}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed=true]{background:var(--accent2);color:#fff}
+.swatch{width:11px;height:11px;border-radius:3px;display:inline-block;flex:none}
+svg{display:block;width:100%;height:auto;overflow:visible;touch-action:none}
+.axis text{font-size:11px;fill:var(--ink3)}
+.axis line,.axis path{stroke:var(--line2);fill:none;shape-rendering:crispEdges}
+.grid line{stroke:var(--line);stroke-dasharray:2 4}
+.alab{font-size:12px;fill:var(--ink2)}
+
+/* ---------- readouts ---------- */
+.read{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-top:14px}
+.read div{background:var(--code);border-radius:9px;padding:10px 13px}
+.read span{display:block;font-size:11.5px;color:var(--ink3);letter-spacing:.03em}
+.read b{font-size:19px;font-variant-numeric:tabular-nums;font-weight:600}
+.eq{font-family:ui-monospace,"Cascadia Mono",Consolas,monospace;background:var(--code);
+    border-radius:9px;padding:13px 15px;font-size:14.5px;overflow-x:auto;margin:14px 0;color:var(--ink)}
+
+/* ---------- tables ---------- */
+.tbl{overflow-x:auto;margin:18px 0}
+table{border-collapse:collapse;width:100%;font-size:13.5px;font-variant-numeric:tabular-nums}
+th,td{padding:9px 12px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+thead th{color:var(--ink3);font-weight:600;font-size:12.5px;border-bottom:1px solid var(--line2)}
+tbody tr:hover{background:var(--code)}
+td.hi{color:var(--accent);font-weight:700}
+
+/* ---------- callouts ---------- */
+.note{border-left:3px solid var(--accent2);background:var(--code);border-radius:0 9px 9px 0;
+      padding:13px 17px;margin:20px 0;font-size:14.5px}
+.note.warn{border-left-color:var(--warn)}
+.note b{display:block;margin-bottom:3px}
+.note p{margin:4px 0;font-size:14px}
+
+/* ---------- steps ---------- */
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin:26px 0}
+.step{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px}
+.step em{font-style:normal;font-size:11.5px;color:var(--accent);font-weight:700;letter-spacing:.1em}
+.step h4{margin:6px 0 5px;font-size:15px}
+.step p{margin:0;font-size:13.5px;line-height:1.6}
+
+/* ---------- citations ---------- */
+a.cite{color:var(--accent2);text-decoration:none;font-size:.78em;font-weight:700;
+       vertical-align:super;padding:0 1px;white-space:nowrap}
+a.cite:hover{text-decoration:underline}
+ol.refs{counter-reset:none;padding-left:0;list-style:none;margin:18px 0}
+ol.refs li{display:grid;grid-template-columns:34px 1fr;gap:10px;padding:11px 0;
+           border-bottom:1px solid var(--line);font-size:14px;line-height:1.65}
+ol.refs li:last-child{border-bottom:0}
+ol.refs .n{color:var(--accent);font-weight:700;font-variant-numeric:tabular-nums;
+           font-size:13px;padding-top:1px}
+ol.refs .t{color:var(--ink);font-weight:600}
+ol.refs .j{color:var(--ink2)}
+ol.refs a{color:var(--accent2);text-decoration:none;word-break:break-all;font-size:13px}
+ol.refs a:hover{text-decoration:underline}
+ol.refs .use{display:block;color:var(--ink3);font-size:12.5px;margin-top:3px}
+ol.refs li:target{background:var(--code);border-radius:8px;padding-left:8px}
+h3.refgrp{font-size:15px;margin:26px 0 2px;color:var(--ink2);
+          letter-spacing:.02em;padding-bottom:6px;border-bottom:1px solid var(--line2)}
+
+footer{padding:36px 0 60px;color:var(--ink3);font-size:13px}
+.tip{font-size:12.5px;color:var(--ink3);margin-top:8px}
+@media (max-width:640px){
+  section{padding:38px 0}
+  .fig{padding:13px}
+  .read b{font-size:16px}
+}
+</style>
+</head>
+<body>
+
+<nav><div class="wrap">
+  <b>HPLC 咖啡因定量</b>
+  <a href="#s1">原理</a><a href="#s2">層析圖</a><a href="#sB">基線校正</a><a href="#sA">峰對齊</a><a href="#s3">峰積分</a>
+  <a href="#s4">檢量線</a><a href="#s5">樣品定量</a><a href="#s6">判峰陷阱</a><a href="#s7">結果</a>
+  <a href="#refs">參考文獻</a>
+  <a href="hplc_basic.html" style="margin-left:auto;border:1px solid var(--line2);color:var(--accent2)">← 入門版</a>
+</div></nav>
+
+<header><div class="wrap">
+  <h1>從層析圖到濃度<br>HPLC 咖啡因定量互動教學</h1>
+  <p>用真實的 HPLC 原始資料，一步步看懂：峰面積是怎麼積出來的、檢量線是怎麼建的、
+     以及一個未知樣品的濃度是怎麼被算出來的。所有圖都可以動手操作。</p>
+  <div class="tags">
+    <span class="tag">Shimadzu LabSolutions 原始匯出檔</span>
+    <span class="tag">6 個標準品 + 4 個樣品</span>
+    <span class="tag">280 nm · 注射 10 µL · 6 min</span>
+  </div>
+</div></header>
+
+<!-- ============================================ 1 ============================================ -->
+<section id="s1"><div class="wrap">
+  <h2><span class="num">STEP 1</span>定量的邏輯</h2>
+  <p class="lead">HPLC 偵測器量到的是<strong>吸光訊號隨時間的變化</strong>，不是濃度。
+     要得到濃度，必須經過三個轉換。反相 HPLC 搭配紫外偵測（咖啡因在 272–280 nm 有強吸收）
+     是飲料與茶葉中咖啡因定量的標準做法<a class="cite" href="#r13">[13,14]</a>。</p>
+
+  <figure class="fig">
+    <svg id="flow" viewBox="0 0 900 210" role="img" aria-label="HPLC 定量流程圖"></svg>
+    <figcaption>圖 1｜定量的三次轉換：訊號 → 面積 → 濃度。中間那條「檢量線」是唯一把儀器訊號翻譯成化學量的橋樑。</figcaption>
+  </figure>
+
+  <div class="steps">
+    <div class="step"><em>核心假設</em><h4>面積正比於量</h4>
+      <p>在偵測器線性範圍內，峰面積 ∝ 進入偵測器的分析物莫耳數。這是所有 HPLC 定量的前提。</p></div>
+    <div class="step"><em>為什麼用面積</em><h4>面積比峰高穩健</h4>
+      <p>峰形變寬（管柱老化、基質效應）時峰高會掉，但面積幾乎不變。本例樣品峰就明顯比標準品寬。</p></div>
+    <div class="step"><em>需要什麼</em><h4>已知濃度的標準品</h4>
+      <p>用一系列已知濃度跑出面積，建立「面積 = f(濃度)」的關係，再反推未知樣品。</p></div>
+  </div>
+</div></section>
+
+<!-- ============================================ 2 ============================================ -->
+<section id="s2"><div class="wrap">
+  <h2><span class="num">STEP 2</span>層析圖：原始訊號長什麼樣</h2>
+  <p class="lead">每個檔案是 721 個點（每 0.5 秒一點，共 6 分鐘）。
+     咖啡因大約在 <strong>4.4–4.7 分鐘</strong>出峰（黃色區帶）。
+     把六個標準品疊在一起，會看到峰高隨濃度規律上升——這就是定量的直觀基礎。</p>
+
+  <figure class="fig">
+    <div class="ctrl" id="chromCtrl"></div>
+    <div class="ctrl">
+      <div class="seg" id="chromZoom">
+        <button data-lo="0" data-hi="6" aria-pressed="true">全圖 0–6 min</button>
+        <button data-lo="4" data-hi="5.4" aria-pressed="false">放大咖啡因區</button>
+      </div>
+      <label><input type="checkbox" id="chromBand" checked> 顯示判峰視窗</label>
+    </div>
+    <svg id="chrom" viewBox="0 0 900 400"></svg>
+    <figcaption>圖 2｜互動層析圖疊圖。勾選要顯示的檔案；滑鼠移到圖上可讀取該時間點的訊號值。
+      注意 <b>std-0</b>（空白）在黃色區帶內完全沒有峰——這是判定該峰確實是咖啡因的重要佐證。</figcaption>
+  </figure>
+
+  <div class="note"><b>觀察重點</b>
+    <p>切到「放大咖啡因區」後同時勾選標準品與樣品，會發現樣品的峰<strong>比較早出、比較寬</strong>
+       （滯留時間 4.43–4.59 vs 標準品 4.65–4.68）。這是真實樣品的基質效應，屬正常現象；
+       只要峰型完整、能與鄰峰分開，面積積分就不受影響。</p></div>
+</div></section>
+
+<!-- ============================================ B ============================================ -->
+<section id="sB"><div class="wrap">
+  <h2><span class="num">STEP 3</span>基線校正：面積要從哪裡開始算</h2>
+  <p class="lead">峰面積是「訊號減去基線」圍出來的，所以<strong>基線畫在哪裡，直接決定答案</strong>。
+     儀器的做法是把峰起訖兩點連一條直線；更通用的做法是
+     <strong>airPLS</strong>（自適應迭代重加權懲罰最小平方）<a class="cite" href="#r4">[4]</a>，
+     它不需要先知道峰在哪，靠迭代加權自動把「疑似基線」的點權重調高、把峰壓下去。</p>
+
+  <div class="eq">校正後訊號 = 原始訊號 − airPLS(原始訊號)
+    ← 注意 <code>airPLS()</code> 回傳的是<b>基線</b>，不是校正後的訊號</div>
+
+  <p>唯一要調的參數是<strong>平滑度 λ</strong>：λ 越大基線越硬（趨近直線），λ 越小基線越軟
+     （能貼合起伏，但也可能爬進峰底下把峰當成基線吃掉）。下圖可以親手拖 λ 看這件事發生。</p>
+
+  <figure class="fig">
+    <div class="ctrl">
+      <div class="seg" id="blRun">
+        <button data-run="std-100" aria-pressed="true">std-100（標準品）</button>
+        <button data-run="sample-1" aria-pressed="false">sample-1（樣品）</button>
+        <button data-run="sample-3" aria-pressed="false">sample-3（多雜峰）</button>
+      </div>
+      <label>λ <input type="range" id="blLam" min="0" max="10" value="6">
+        <b id="blLamV" style="font-variant-numeric:tabular-nums">—</b></label>
+      <label><input type="checkbox" id="blFull"> 顯示完整 0–6 min</label>
+    </div>
+    <svg id="bline" viewBox="0 0 900 430"></svg>
+    <div class="read">
+      <div><span>峰高保留</span><b id="bl-keep">—</b></div>
+      <div><span>檢量線斜率比</span><b id="bl-slope">—</b></div>
+      <div><span>檢量線 R²</span><b id="bl-r2">—</b></div>
+      <div><span>樣品濃度 (ppm)</span><b id="bl-conc" style="font-size:14px">—</b></div>
+    </div>
+    <p class="tip" id="blVerdict">—</p>
+    <figcaption>圖 3｜上圖是原始訊號（灰）與 airPLS 基線（紅）；下圖是扣掉基線後的訊號。
+      把 λ 拉到最小，會看到紅色基線<strong>鼓起來鑽進峰底下</strong>，下圖的峰跟著矮一截——
+      那就是被當成基線吃掉的面積。λ 拉到最大則基線變成近乎水平線，跟不上真實起伏。</figcaption>
+  </figure>
+
+  <div class="note"><b>怎麼判斷 λ 挑對了</b>
+    <p>看<strong>峰高保留率</strong>（校正後峰高 ÷ 線性基線扣除後峰高）。低於 99% 表示基線
+       吃到峰；同時檢量線斜率也會跟著掉，等於整批訊號被系統性削弱。本資料的安全區間是
+       <strong>λ = 10⁴ ~ 10⁵、differences = 2</strong>。</p></div>
+
+  <h3>λ 太大也會錯——而且更難發現</h3>
+  <p>λ 太小的問題（吃掉峰）在圖上看得出來；λ 太大的問題是基線退化成水平線、跟不上真實漂移，
+     殘留的漂移會被算進面積。切到 <b>sample-3</b> 再把 λ 拉到 10⁷ 以上，
+     它的濃度會從約 86 ppm 跳到 92 ppm 以上，但層析圖上幾乎看不出異狀。</p>
+
+  <h3>疊加已知漂移的回收測試</h3>
+  <p>要客觀評估 λ，最好的方法是<strong>疊一個已知的基線漂移上去，看校正後面積變了多少</strong>。
+     理想的基線校正應該把疊加的漂移完全移除，面積不變（誤差 0%）。</p>
+
+  <figure class="fig">
+    <svg id="drift" viewBox="0 0 900 340"></svg>
+    <div class="tbl"><table id="driftTbl">
+      <thead><tr><th>檔案</th><th>漂移型態</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+    <figcaption>圖 4｜疊加漂移後的面積變化%（越接近 0 越好）。
+      λ = 10⁴ 對四種漂移形狀都控制在 2% 以內；λ ≥ 10⁵ 在「起伏型」基線上會嚴重失效。</figcaption>
+  </figure>
+
+  <div class="note warn"><b>結論：λ 沒有萬用值</b>
+    <p>λ = 10⁵ 在<strong>這批資料</strong>上與線性基線最接近（樣品濃度差 ≤ 0.34 ppm），
+       因為這批的基線本來就很平；但它擋不住週期約 4 分鐘的起伏型基線。
+       <strong>基線只是平緩漂移用 10⁵；不確定就用 10⁴。</strong>
+       換一台儀器、換一個梯度程式，都應該重做一次這個測試。</p></div>
+
+  <div class="note"><b>那為什麼後面用的是另一種基線？</b>
+    <p>STEP 4 的 alignDE 內建 <code>baselineCorrectionCWT</code>，它同樣是 Whittaker 懲罰最小平方
+       <a class="cite" href="#r3">[3]</a>，差別在於它用 CWT 偵測到的峰區來決定哪裡該擬合，
+       而 airPLS 靠自適應加權自動判斷、不需先偵測峰。兩者在本資料算出的最終樣品濃度差
+       ≤ 1 ppm，可以互相替換。</p></div>
+</div></section>
+
+<!-- ============================================ A ============================================ -->
+<section id="sA"><div class="wrap">
+  <h2><span class="num">STEP 4</span>峰對齊：把漂移的滯留時間拉回來</h2>
+  <p class="lead">上一步看到樣品的峰比標準品早出 0.06–0.23 分鐘。只要滯留時間會漂移，
+     就沒辦法用同一個固定的積分視窗處理所有檔案。
+     <strong>alignDE</strong><a class="cite" href="#r1">[1]</a> 用小波峰型比對找出峰位、
+     再用差分演化搜尋每個峰該平移多少，把所有圖譜對到同一個參考圖上。</p>
+
+  <div class="steps">
+    <div class="step"><em>1 · 找峰</em><h4>連續小波轉換</h4>
+      <p>用 Mexican Hat 小波做 CWT 找峰頂（ridge line）<a class="cite" href="#r2">[2]</a>，
+         再用 Haar 小波估計每個峰的起訖點。</p></div>
+    <div class="step"><em>2 · 扣基線</em><h4>懲罰最小平方</h4>
+      <p>Whittaker 平滑<a class="cite" href="#r3">[3]</a>在非峰區擬合一條柔性基線並扣除，
+         讓相關係數不被基線漂移主導。</p></div>
+    <div class="step"><em>3 · 對齊</em><h4>差分演化</h4>
+      <p>DE<a class="cite" href="#r5">[5,6]</a> 搜尋每群峰在 ±slack 內的位移，最大化與參考圖的
+         相關係數；峰內不變形，峰間線性內插。</p></div>
+  </div>
+
+  <div class="note"><b>和其他對齊方法的關係</b>
+    <p>層析圖對齊最經典的方法是 <b>COW</b>（correlation optimised warping，
+       Nielsen 等人 1998<a class="cite" href="#r7">[7]</a>），
+       它把訊號切段後逐段伸縮；Tomasi 等人<a class="cite" href="#r8">[8]</a> 系統比較過 COW 與 DTW
+       在層析資料上的表現。alignDE 的差別在於<strong>只平移峰、不伸縮峰內部</strong>，
+       因此峰面積在對齊過程中被完整保留——這正是定量分析需要的性質<a class="cite" href="#r1">[1]</a>。</p></div>
+
+  <figure class="fig">
+    <div class="ctrl">
+      <div class="seg" id="alnToggle">
+        <button data-mode="bc" aria-pressed="true">對齊前</button>
+        <button data-mode="al" aria-pressed="false">對齊後</button>
+      </div>
+      <label><input type="checkbox" id="alnWin" checked> 顯示固定積分視窗</label>
+      <span class="tip" style="margin:0">參考圖：<b id="alnRef">—</b></span>
+    </div>
+    <svg id="align" viewBox="0 0 900 400"></svg>
+    <figcaption>圖 4｜同一批 10 個層析圖（已扣基線）在對齊前後的疊圖。切換按鈕看差別：
+      對齊前樣品（深色線）的峰散在 4.43–4.60 min；對齊後全部收攏到參考峰位 4.658 min。
+      <strong>峰高與峰形沒有改變</strong>——alignDE 只平移位置，不改變面積。</figcaption>
+  </figure>
+
+  <h3>對齊診斷</h3>
+  <div class="tbl"><table id="alnDiag">
+    <thead><tr><th>檔案</th><th>對齊前相關係數</th><th>對齊後相關係數</th>
+      <th>峰頂前 (min)</th><th>峰頂後 (min)</th><th>與參考差 (min)</th></tr></thead>
+    <tbody></tbody>
+  </table></div>
+
+  <h3>對齊到底買到了什麼</h3>
+  <p>alignDE 依設計會保留峰面積，所以<strong>對齊本身不會改變面積</strong>。
+     它真正的價值是讓所有檔案能共用同一個固定積分視窗。
+     下表用不同寬度的固定視窗（以參考峰頂為中心）重跑定量：<strong>穩健的方法，答案不該隨視窗寬度大幅改變</strong>。</p>
+
+  <figure class="fig">
+    <svg id="sens" viewBox="0 0 900 330"></svg>
+    <div class="tbl"><table id="sensTbl">
+      <thead><tr><th>固定視窗半寬</th><th colspan="4" style="text-align:center">未對齊 (ppm)</th>
+        <th colspan="4" style="text-align:center">對齊後 (ppm)</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+    <figcaption>圖 5｜視窗寬度敏感度。未對齊時，視窗一縮小，樣品的峰就有一半落在視窗外，
+      濃度崩跌（sample-1 從 92.6 掉到 47.1 ppm）；對齊後同樣的視窗變化只造成幾 ppm 的差異。</figcaption>
+  </figure>
+
+  <div class="note"><b>結論</b>
+    <p>各樣品在 ±0.20 ~ ±0.50 min 五種視窗下的濃度<strong>全距平均：未對齊 27.3 ppm → 對齊後 4.7 ppm</strong>。
+       對齊讓定量結果不再依賴「積分視窗剛好設對」這件事。</p></div>
+
+  <div class="note warn"><b>對齊不是萬能</b>
+    <p>alignDE 是<strong>訊號層級</strong>的校正，它假設要對齊的峰確實是同一個化合物。
+       如果峰的身分本來就判斷錯了（見 STEP 7），對齊只會把錯的峰對得更整齊。
+       另外空白樣品（std-0）在該區間沒有峰，對齊對它沒有意義——表中它的相關係數維持在 0 附近。</p></div>
+</div></section>
+
+<!-- ============================================ 3 ============================================ -->
+<section id="s3"><div class="wrap">
+  <h2><span class="num">STEP 5</span>峰積分：面積是怎麼算出來的</h2>
+  <p class="lead">「峰面積」＝ <strong>訊號曲線與基線之間圍出的面積</strong>。
+     電腦的做法是把這塊區域切成很多細長梯形再加起來（梯形法）。
+     下面可以親手拖曳積分起訖點、調整梯形數量，看面積怎麼變。</p>
+
+  <figure class="fig">
+    <div class="ctrl">
+      <label>檔案 <select id="intRun"></select></label>
+      <label>梯形數 <input type="range" id="intN" min="2" max="120" value="12"><span id="intNv" style="font-variant-numeric:tabular-nums">12</span></label>
+      <label><input type="checkbox" id="intShowTrap" checked> 顯示梯形</label>
+      <button class="seg" style="border:0;padding:0"><span style="display:none"></span></button>
+      <div class="seg"><button id="intReset">回到儀器預設積分區間</button></div>
+    </div>
+    <svg id="integ" viewBox="0 0 900 400"></svg>
+    <div class="read">
+      <div><span>積分區間</span><b id="ro-range">—</b></div>
+      <div><span>梯形法面積（目前梯形數）</span><b id="ro-approx">—</b></div>
+      <div><span>全解析度面積（721 點）</span><b id="ro-full">—</b></div>
+      <div><span>儀器報告面積</span><b id="ro-inst">—</b></div>
+      <div><span>與儀器差異</span><b id="ro-diff">—</b></div>
+    </div>
+    <p class="tip">拖曳圖上兩條虛線把手（▮）可改變積分起訖點；灰色斜線是<strong>基線</strong>，由起訖兩點連成。</p>
+    <figcaption>圖 6｜峰積分互動示範。梯形數愈多，梯形法的結果愈接近真值；本例約 30 個梯形就已收斂到 0.1% 以內。</figcaption>
+  </figure>
+
+  <div class="eq">面積 ≈ Σ [ (h<sub>i</sub> + h<sub>i+1</sub>) / 2 ] × Δt　　h = 訊號 − 基線，Δt = 0.5 秒</div>
+
+  <div class="note warn"><b>基線與積分邊界會直接改變答案</b>
+    <p>把起點往左拉、終點往右拉，面積會不斷變大——因為多含進了基線雜訊與鄰峰。
+       這也是為什麼<strong>標準品與樣品必須用一致的積分規則</strong>，否則檢量線本身就失真了。</p></div>
+</div></section>
+
+<!-- ============================================ 4 ============================================ -->
+<section id="s4"><div class="wrap">
+  <h2><span class="num">STEP 6</span>檢量線：把面積翻譯成濃度</h2>
+  <p class="lead">六個已知濃度的標準品各得到一個面積，把（濃度, 面積）畫成散布圖做<strong>最小平方線性迴歸</strong>，
+     就得到檢量線。下圖可切換是否納入空白點、是否強制過原點，即時看係數與 R² 怎麼變。</p>
+
+  <figure class="fig">
+    <div class="ctrl">
+      <label><input type="checkbox" id="calZero" checked> 納入 0 ppm 空白點</label>
+      <label><input type="checkbox" id="calForce"> 強制通過原點</label>
+      <label><input type="checkbox" id="calShowSamples" checked> 疊上樣品</label>
+    </div>
+    <svg id="calib" viewBox="0 0 900 380"></svg>
+    <div class="eq" id="calEq">—</div>
+    <div class="read">
+      <div><span>斜率 b（靈敏度）</span><b id="ro-slope">—</b></div>
+      <div><span>截距 a</span><b id="ro-int">—</b></div>
+      <div><span>判定係數 R²</span><b id="ro-r2">—</b></div>
+      <div><span>迴歸標準誤 s</span><b id="ro-s">—</b></div>
+      <div><span>LOD = 3.3 s/b <a class="cite" href="#r10">[10,11]</a></span><b id="ro-lod">—</b></div>
+      <div><span>LOQ = 10 s/b <a class="cite" href="#r10">[10,11]</a></span><b id="ro-loq">—</b></div>
+    </div>
+    <figcaption>圖 7｜檢量線與殘差圖。上圖的點若目視「都在線上」不代表沒問題，
+      必須看<strong>下方殘差圖</strong>：殘差應隨機分布在 0 上下；若呈現系統性的 ∪ 或 ∩ 形，表示響應其實不是線性的。</figcaption>
+  </figure>
+
+  <h3>殘差在說什麼</h3>
+  <p>本例殘差呈現淺淺的 ∪ 形（低濃度與高濃度偏正、中間偏負），代表響應有<strong>輕微正曲率</strong>：
+     每 ppm 的面積從 43,222 慢慢升到 48,154。改用二次式擬合可讓 R² 從 0.999435 升到 0.999861——
+     提升僅 0.0004，不足以放棄線性模型的簡潔，故仍採線性。</p>
+
+  <div class="note"><b>R² 高不等於方法正確</b>
+    <p>R² = 0.9994 看起來很漂亮，但它只說明「點靠近線」。真正該檢查的是：
+       殘差是否隨機、各標準品<strong>回算濃度</strong>是否落在標稱值 ±5% 內、樣品是否落在檢量線範圍內。
+       本例回算濃度誤差為 −1.7%～+3.1%，通過。IUPAC 的單成分檢量線指引<a class="cite" href="#r9">[9]</a>
+       與 ICH Q2 確效規範<a class="cite" href="#r11">[11]</a> 對線性、範圍與 LOD/LOQ 的評估都有明確要求。</p></div>
+</div></section>
+
+<!-- ============================================ 5 ============================================ -->
+<section id="s5"><div class="wrap">
+  <h2><span class="num">STEP 7</span>樣品定量：反推未知濃度</h2>
+  <p class="lead">樣品的面積落在 y 軸上，往右水平走到檢量線，再垂直落下來讀 x 軸，就是濃度。
+     點下方按鈕看動畫演示。</p>
+
+  <figure class="fig">
+    <div class="ctrl" id="quantBtns"></div>
+    <svg id="quant" viewBox="0 0 900 380"></svg>
+    <div class="read">
+      <div><span>峰面積</span><b id="q-area">—</b></div>
+      <div><span>濃度</span><b id="q-conc">—</b></div>
+      <div><span>95% 信賴區間</span><b id="q-ci">—</b></div>
+      <div><span>是否在檢量線範圍內</span><b id="q-in">—</b></div>
+    </div>
+    <figcaption>圖 8｜反推示意。灰色帶是檢量線的 95% 預測區間——它在<strong>中心濃度處最窄、兩端最寬</strong>，
+      所以樣品濃度盡量落在檢量線中段，結果最可靠。</figcaption>
+  </figure>
+
+  <div class="eq">C (ppm) = ( Area − a ) / b　　　不確定度 s<sub>C</sub> = (s / b) √( 1 + 1/n + (C − C̄)² / S<sub>xx</sub> )</div>
+  <p class="tip">反推濃度的標準誤公式與 95% 信賴區間的推導見 Miller &amp; Miller
+     <a class="cite" href="#r12">[12]</a>；n 為檢量線點數，C̄ 為標準品濃度平均，
+     S<sub>xx</sub> = Σ(C<sub>i</sub> − C̄)²。</p>
+</div></section>
+
+<!-- ============================================ 6 ============================================ -->
+<section id="s6"><div class="wrap">
+  <h2><span class="num">STEP 8</span>陷阱：不要盲信儀器的自動判峰</h2>
+  <p class="lead">這批真實資料裡，儀器的自動化合物指認在 4 個檔案是<strong>錯的</strong>。
+     它照著方法檔設定的滯留時間視窗抓峰，但樣品滯留時間漂移後，它就抓到旁邊的雜訊小峰。</p>
+
+  <figure class="fig">
+    <div class="ctrl">
+      <div class="seg" id="trapPick">
+        <button data-run="sample-3" aria-pressed="true">sample-3</button>
+        <button data-run="sample-4" aria-pressed="false">sample-4</button>
+        <button data-run="std-25" aria-pressed="false">std-25</button>
+      </div>
+    </div>
+    <svg id="misid" viewBox="0 0 900 380"></svg>
+    <figcaption>圖 9｜紅色箭頭是儀器指認的「咖啡因」，綠色箭頭是真正的咖啡因峰。兩者面積差了 190 倍。</figcaption>
+  </figure>
+
+  <div class="tbl"><table>
+    <thead><tr><th>檔案</th><th>儀器指認 RT</th><th>儀器指認面積</th><th>實際咖啡因 RT</th><th>實際面積</th><th>若照用儀器結果</th></tr></thead>
+    <tbody>
+      <tr><td>std-25</td><td>4.177</td><td>174,985</td><td>4.653</td><td>1,080,560</td><td>檢量線嚴重偏低</td></tr>
+      <tr><td>sample-1</td><td>未指認</td><td>—</td><td>4.446</td><td>4,378,116</td><td>無結果</td></tr>
+      <tr><td>sample-3</td><td>3.242</td><td>21,355</td><td>4.594</td><td>4,085,132</td><td class="hi">−0.24 ppm（負值）</td></tr>
+      <tr><td>sample-4</td><td>4.028</td><td>17,636</td><td>4.578</td><td>4,114,384</td><td class="hi">−0.33 ppm（負值）</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="note warn"><b>怎麼避免</b>
+    <p>① 每次分析都親眼看層析圖，不要只看報表數字。<br>
+       ② 用<strong>空白（std-0）</strong>確認該滯留時間確實沒有干擾峰。<br>
+       ③ 出現負濃度、或濃度與峰高明顯矛盾時，一定是判峰或基線出了問題。</p></div>
+</div></section>
+
+<!-- ============================================ 7 ============================================ -->
+<section id="s7"><div class="wrap">
+  <h2><span class="num">STEP 9</span>最終結果</h2>
+
+  <h3>檢量線</h3>
+  <div class="eq">Area = 48,393.42 × C − 111,613.06　　R² = 0.999435　(n = 6)<br>
+                 C (ppm) = ( Area + 111,613.06 ) / 48,393.42</div>
+
+  <h3>樣品濃度</h3>
+  <div class="tbl"><table id="resultTbl">
+    <thead><tr><th>樣品</th><th>滯留時間 (min)</th><th>峰面積</th><th>濃度 (ppm)</th><th>95% CI</th><th>檢量線範圍內</th></tr></thead>
+    <tbody></tbody>
+  </table></div>
+
+  <div class="note"><b>單位與稀釋</b>
+    <p>濃度單位與標準品配製單位相同（ppm = µg/mL）。本批 Dilution Factor = 1、注射量 10 µL 全部一致；
+       若前處理有稀釋，最終結果需再乘上稀釋倍數。</p></div>
+
+  <h3>三句話總結</h3>
+  <div class="steps">
+    <div class="step"><em>面積</em><h4>訊號減基線再積分</h4>
+      <p>基線畫在哪、積分從哪開始到哪結束，直接決定面積大小；標準品與樣品必須一致。</p></div>
+    <div class="step"><em>檢量線</em><h4>看殘差不只看 R²</h4>
+      <p>R² 0.999 仍可能有系統性曲率。回算濃度與殘差圖才是真正的驗收指標。</p></div>
+    <div class="step"><em>判峰</em><h4>眼睛看過層析圖</h4>
+      <p>自動指認會因滯留時間漂移而抓錯峰。負濃度就是最明顯的警訊。</p></div>
+  </div>
+</div></section>
+
+<!-- ============================================ refs ============================================ -->
+<section id="refs"><div class="wrap">
+  <h2><span class="num">參考文獻</span>References</h2>
+  <p class="lead">以下文獻對應本頁實際使用的演算法與規範。第 1–10、13–14 項的書目資料
+     已透過 Crossref 以 DOI 逐筆核對；第 11–12 項為法規指引與教科書，無 DOI。</p>
+
+  <h3 class="refgrp">A · 峰對齊與訊號前處理</h3>
+  <ol class="refs">
+    <li id="r1"><span class="n">[1]</span><span>
+      <span class="t">Peak alignment using wavelet pattern matching and differential evolution.</span>
+      <span class="j">Zhang Z.-M., Chen S., Liang Y.-Z. (2011). <i>Talanta</i>, 83(4), 1108–1117.</span>
+      <a href="https://doi.org/10.1016/j.talanta.2010.08.008" target="_blank" rel="noopener">10.1016/j.talanta.2010.08.008</a>
+      <span class="use">本頁 STEP 3 所用的 alignDE 方法原始論文；R 套件 alignDE 3.0.0 即為此方法的實作。</span>
+    </span></li>
+    <li id="r2"><span class="n">[2]</span><span>
+      <span class="t">Improved peak detection in mass spectrum by incorporating continuous wavelet transform-based pattern matching.</span>
+      <span class="j">Du P., Kibbe W. A., Lin S. M. (2006). <i>Bioinformatics</i>, 22(17), 2059–2065.</span>
+      <a href="https://doi.org/10.1093/bioinformatics/btl355" target="_blank" rel="noopener">10.1093/bioinformatics/btl355</a>
+      <span class="use">CWT ridge-line 峰偵測演算法；alignDE 的 <code>cwt()</code>、<code>getRidge()</code>、
+        <code>identifyMajorPeaks()</code> 改寫自此方法（MassSpecWavelet）。</span>
+    </span></li>
+    <li id="r3"><span class="n">[3]</span><span>
+      <span class="t">A Perfect Smoother.</span>
+      <span class="j">Eilers P. H. C. (2003). <i>Analytical Chemistry</i>, 75(14), 3631–3636.</span>
+      <a href="https://doi.org/10.1021/ac034173t" target="_blank" rel="noopener">10.1021/ac034173t</a>
+      <span class="use">Whittaker 懲罰最小平方平滑；alignDE 的 <code>baselineCorrectionCWT()</code>
+        與 airPLS 共同的理論基礎。</span>
+    </span></li>
+    <li id="r4"><span class="n">[4]</span><span>
+      <span class="t">Baseline correction using adaptive iteratively reweighted penalized least squares.</span>
+      <span class="j">Zhang Z.-M., Chen S., Liang Y.-Z. (2010). <i>The Analyst</i>, 135(5), 1138–1146.</span>
+      <a href="https://doi.org/10.1039/b922045c" target="_blank" rel="noopener">10.1039/b922045c</a>
+      <span class="use">airPLS 原始論文；本頁 STEP 3 的基線校正方法，R 套件 airPLS 3.0.0 為其實作。</span>
+    </span></li>
+    <li id="r5"><span class="n">[5]</span><span>
+      <span class="t">Differential Evolution — A Simple and Efficient Heuristic for Global Optimization over Continuous Spaces.</span>
+      <span class="j">Storn R., Price K. (1997). <i>Journal of Global Optimization</i>, 11(4), 341–359.</span>
+      <a href="https://doi.org/10.1023/A:1008202821328" target="_blank" rel="noopener">10.1023/A:1008202821328</a>
+      <span class="use">差分演化原始論文；用來搜尋每群峰的最佳位移量。</span>
+    </span></li>
+    <li id="r6"><span class="n">[6]</span><span>
+      <span class="t">DEoptim: An R Package for Global Optimization by Differential Evolution.</span>
+      <span class="j">Mullen K., Ardia D., Gil D., Windover D., Cline J. (2011).
+        <i>Journal of Statistical Software</i>, 40(6), 1–26.</span>
+      <a href="https://doi.org/10.18637/jss.v040.i06" target="_blank" rel="noopener">10.18637/jss.v040.i06</a>
+      <span class="use">alignDE 3.0.0 實際呼叫的最佳化引擎。</span>
+    </span></li>
+    <li id="r7"><span class="n">[7]</span><span>
+      <span class="t">Aligning of single and multiple wavelength chromatographic profiles for chemometric data analysis using correlation optimised warping.</span>
+      <span class="j">Nielsen N.-P. V., Carstensen J. M., Smedsgaard J. (1998).
+        <i>Journal of Chromatography A</i>, 805(1–2), 17–35.</span>
+      <a href="https://doi.org/10.1016/S0021-9673(98)00021-1" target="_blank" rel="noopener">10.1016/S0021-9673(98)00021-1</a>
+      <span class="use">COW 的原始論文，層析圖對齊最廣為使用的基準方法。</span>
+    </span></li>
+    <li id="r8"><span class="n">[8]</span><span>
+      <span class="t">Correlation optimized warping and dynamic time warping as preprocessing methods for chromatographic data.</span>
+      <span class="j">Tomasi G., van den Berg F., Andersson C. (2004).
+        <i>Journal of Chemometrics</i>, 18(5), 231–241.</span>
+      <a href="https://doi.org/10.1002/cem.859" target="_blank" rel="noopener">10.1002/cem.859</a>
+      <span class="use">COW 與 DTW 在層析資料上的系統性比較，說明為何伸縮型方法會改變峰面積。</span>
+    </span></li>
+  </ol>
+
+  <h3 class="refgrp">B · 檢量線、偵測極限與方法確效</h3>
+  <ol class="refs">
+    <li id="r9"><span class="n">[9]</span><span>
+      <span class="t">Guidelines for calibration in analytical chemistry. Part I. Fundamentals and single component calibration (IUPAC Recommendations 1998).</span>
+      <span class="j">Danzer K., Currie L. A. (1998). <i>Pure and Applied Chemistry</i>, 70(4), 993–1014.</span>
+      <a href="https://doi.org/10.1351/pac199870040993" target="_blank" rel="noopener">10.1351/pac199870040993</a>
+      <span class="use">單成分檢量線的建立、線性檢驗與殘差評估的 IUPAC 規範。</span>
+    </span></li>
+    <li id="r10"><span class="n">[10]</span><span>
+      <span class="t">Nomenclature in evaluation of analytical methods including detection and quantification capabilities (IUPAC Recommendations 1995).</span>
+      <span class="j">Currie L. A. (1995). <i>Pure and Applied Chemistry</i>, 67(10), 1699–1723.</span>
+      <a href="https://doi.org/10.1351/pac199567101699" target="_blank" rel="noopener">10.1351/pac199567101699</a>
+      <span class="use">偵測極限（LOD）與定量極限（LOQ）的定義與命名規範。</span>
+    </span></li>
+    <li id="r11"><span class="n">[11]</span><span>
+      <span class="t">ICH Harmonised Guideline Q2(R2): Validation of Analytical Procedures.</span>
+      <span class="j">International Council for Harmonisation of Technical Requirements for
+        Pharmaceuticals for Human Use (2023). 取代 1996 年版 Q2(R1)。</span>
+      <a href="https://database.ich.org/sites/default/files/ICH_Q2%28R2%29_Guideline_2023_1130.pdf" target="_blank" rel="noopener">database.ich.org · Q2(R2)</a>
+      <span class="use">本頁 LOD = 3.3 σ/S、LOQ = 10 σ/S 的來源；σ 以迴歸標準誤估計、S 為斜率。無 DOI。</span>
+    </span></li>
+    <li id="r12"><span class="n">[12]</span><span>
+      <span class="t">Statistics and Chemometrics for Analytical Chemistry, 6th ed.</span>
+      <span class="j">Miller J. N., Miller J. C. (2010). Pearson Education, Harlow. 第 5 章。</span>
+      <span class="use">由檢量線反推濃度的標準誤公式
+        s<sub>C</sub> = (s/b)√(1/m + 1/n + (C−C̄)²/S<sub>xx</sub>) 及其信賴區間。教科書，無 DOI。</span>
+    </span></li>
+  </ol>
+
+  <h3 class="refgrp">C · 咖啡因的 HPLC 定量</h3>
+  <ol class="refs">
+    <li id="r13"><span class="n">[13]</span><span>
+      <span class="t">Determination of caffeine in beverages by high performance liquid chromatography.</span>
+      <span class="j">DiNunzio J. E. (1985). <i>Journal of Chemical Education</i>, 62(5), 446.</span>
+      <a href="https://doi.org/10.1021/ed062p446" target="_blank" rel="noopener">10.1021/ed062p446</a>
+      <span class="use">以反相 HPLC + UV 外標法定量飲料中咖啡因的教學實驗，與本頁流程相同。</span>
+    </span></li>
+    <li id="r14"><span class="n">[14]</span><span>
+      <span class="t">Determination of Caffeine in Tea Products by an Improved High-Performance Liquid Chromatography Method.</span>
+      <span class="j">Naik J. P., Nagalakshmi S. (1997).
+        <i>Journal of Agricultural and Food Chemistry</i>, 45(10), 3973–3975.</span>
+      <a href="https://doi.org/10.1021/jf970147i" target="_blank" rel="noopener">10.1021/jf970147i</a>
+      <span class="use">茶製品基質中咖啡因的 HPLC 定量方法，可對照本頁樣品的基質效應現象。</span>
+    </span></li>
+  </ol>
+
+  <h3>軟體</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>軟體</th><th>版本</th><th>用途</th></tr></thead>
+    <tbody>
+      <tr><td>R</td><td>4.6.1</td><td>檢量線迴歸、峰對齊</td></tr>
+      <tr><td>alignDE</td><td>3.0.0</td><td>CWT 峰偵測、基線扣除、DE 對齊</td></tr>
+      <tr><td>DEoptim</td><td>2.2.8</td><td>差分演化最佳化引擎</td></tr>
+      <tr><td>Python</td><td>3.12</td><td>解析、迴歸、繪圖、產生本頁</td></tr>
+      <tr><td>NumPy / SciPy / pandas / Matplotlib</td><td>—</td><td>數值計算與繪圖</td></tr>
+    </tbody>
+  </table></div>
+</div></section>
+
+<footer><div class="wrap">
+  資料來源：Shimadzu LabSolutions ASCII 匯出檔（2016/10/14、2016/10/17 兩批次）。
+  本頁所有圖形均由原始 721 點層析資料即時繪製，計算與 <code>caffeine_calibration.py</code> /
+  <code>caffeine_calibration.R</code> 完全一致。
+</div></footer>
+
+<script>
+"use strict";
+const DATA = /*__HPLC_DATA__*/{};
+const NS = "http://www.w3.org/2000/svg";
+const M = DATA.meta;
+const RUNS = {}; DATA.runs.forEach(r => RUNS[r.id] = r);
+const STDS = DATA.runs.filter(r => r.kind === "std");
+const SAMPS = DATA.runs.filter(r => r.kind === "sample");
+const T_TABLE = {1:12.706,2:4.303,3:3.182,4:2.776,5:2.571,6:2.447,7:2.365,8:2.306,9:2.262,10:2.228};
+
+/* ---------------- helpers ---------------- */
+const tOf = i => i * M.tEnd / (M.nPoints - 1);          // index -> min
+const iOf = t => t * (M.nPoints - 1) / M.tEnd;          // min -> index (float)
+const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
+const fmt = (v,d=0) => v.toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d});
+
+function el(tag, attrs, parent){
+  const n = document.createElementNS(NS, tag);
+  for (const k in attrs) n.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(n);
+  return n;
+}
+function clear(svg){ while (svg.firstChild) svg.removeChild(svg.firstChild); }
+function sc(d0,d1,r0,r1){ return v => r0 + (v-d0)/(d1-d0)*(r1-r0); }
+function svgPoint(svg, ev){
+  const p = svg.createSVGPoint(); p.x = ev.clientX; p.y = ev.clientY;
+  return p.matrixTransform(svg.getScreenCTM().inverse());
+}
+function niceTicks(lo, hi, n){
+  const raw = (hi-lo)/n, mag = Math.pow(10, Math.floor(Math.log10(raw)));
+  const norm = raw/mag, step = mag * (norm<1.5?1:norm<3?2:norm<7?5:10);
+  const out = []; for (let v = Math.ceil(lo/step)*step; v <= hi+1e-9; v += step) out.push(v);
+  return out;
+}
+function axes(svg, x, y, xd, yd, pad, xlab, ylab, yfmt){
+  const g = el("g",{class:"axis"},svg);
+  const gg = el("g",{class:"grid"},svg);
+  niceTicks(xd[0],xd[1],7).forEach(v=>{
+    const X = x(v);
+    el("line",{x1:X,y1:pad.t,x2:X,y2:pad.h-pad.b},gg);
+    el("line",{x1:X,y1:pad.h-pad.b,x2:X,y2:pad.h-pad.b+5},g);
+    const t = el("text",{x:X,y:pad.h-pad.b+19,"text-anchor":"middle"},g);
+    t.textContent = Math.abs(v)<1e-9 ? "0" : (Math.abs(v)<10 ? (+v.toFixed(2)).toString() : fmt(v));
+  });
+  niceTicks(yd[0],yd[1],5).forEach(v=>{
+    const Y = y(v);
+    el("line",{x1:pad.l,y1:Y,x2:pad.w-pad.r,y2:Y},gg);
+    el("line",{x1:pad.l-5,y1:Y,x2:pad.l,y2:Y},g);
+    const t = el("text",{x:pad.l-9,y:Y+4,"text-anchor":"end"},g);
+    t.textContent = yfmt ? yfmt(v) : fmt(v);
+  });
+  el("line",{x1:pad.l,y1:pad.h-pad.b,x2:pad.w-pad.r,y2:pad.h-pad.b},g);
+  el("line",{x1:pad.l,y1:pad.t,x2:pad.l,y2:pad.h-pad.b},g);
+  let t = el("text",{x:(pad.l+pad.w-pad.r)/2,y:pad.h-4,"text-anchor":"middle",class:"alab"},svg);
+  t.textContent = xlab;
+  t = el("text",{x:14,y:(pad.t+pad.h-pad.b)/2,"text-anchor":"middle",class:"alab",
+                 transform:`rotate(-90 14 ${(pad.t+pad.h-pad.b)/2})`},svg);
+  t.textContent = ylab;
+}
+function trace(run, x, y, i0, i1){
+  let d = "";
+  for (let i = Math.max(0,Math.floor(i0)); i <= Math.min(M.nPoints-1, Math.ceil(i1)); i++)
+    d += (d ? "L" : "M") + x(tOf(i)).toFixed(1) + " " + y(run.y[i]/1000).toFixed(1);
+  return d;
+}
+/* 梯形法：以 [i0,i1] 兩端連線為基線 */
+function areaFull(yArr, i0, i1){
+  const a0 = Math.round(i0), a1 = Math.round(i1);
+  const y0 = yArr[a0], y1 = yArr[a1], n = a1 - a0;
+  if (n <= 0) return 0;
+  let s = 0;
+  for (let i = a0; i < a1; i++){
+    const b1 = y0 + (y1-y0)*(i-a0)/n, b2 = y0 + (y1-y0)*(i+1-a0)/n;
+    s += ((yArr[i]-b1) + (yArr[i+1]-b2)) / 2 * M.dtSec;
+  }
+  return s;
+}
+function areaN(yArr, i0, i1, n){
+  const yAt = idx => { const f = clamp(Math.floor(idx),0,M.nPoints-2), r = idx-f;
+                       return yArr[f]*(1-r) + yArr[f+1]*r; };
+  const y0 = yAt(i0), y1 = yAt(i1), span = i1-i0, step = span/n;
+  let s = 0;
+  for (let k = 0; k < n; k++){
+    const ia = i0+k*step, ib = ia+step;
+    const ba = y0+(y1-y0)*(ia-i0)/span, bb = y0+(y1-y0)*(ib-i0)/span;
+    s += ((yAt(ia)-ba) + (yAt(ib)-bb)) / 2 * step * M.dtSec;
+  }
+  return s;
+}
+function linreg(xs, ys, forceZero){
+  const n = xs.length;
+  let b0, b1;
+  if (forceZero){
+    b1 = xs.reduce((a,x,i)=>a+x*ys[i],0) / xs.reduce((a,x)=>a+x*x,0); b0 = 0;
+  } else {
+    const mx = xs.reduce((a,b)=>a+b,0)/n, my = ys.reduce((a,b)=>a+b,0)/n;
+    const sxy = xs.reduce((a,x,i)=>a+(x-mx)*(ys[i]-my),0);
+    const sxx = xs.reduce((a,x)=>a+(x-mx)*(x-mx),0);
+    b1 = sxy/sxx; b0 = my - b1*mx;
+  }
+  const fit = xs.map(x => b0 + b1*x);
+  const res = ys.map((v,i) => v - fit[i]);
+  const my = ys.reduce((a,b)=>a+b,0)/n;
+  const ssr = res.reduce((a,v)=>a+v*v,0);
+  const sst = ys.reduce((a,v)=>a+(v-my)*(v-my),0);
+  const df = n - (forceZero ? 1 : 2);
+  const mx = xs.reduce((a,b)=>a+b,0)/n;
+  return { b0, b1, r2: 1-ssr/sst, s: Math.sqrt(ssr/df), res, n, df, mx,
+           sxx: xs.reduce((a,x)=>a+(x-mx)*(x-mx),0) };
+}
+
+/* ============================== 圖 1：流程圖 ============================== */
+(function flow(){
+  const svg = document.getElementById("flow");
+  const boxes = [
+    ["樣品注射", "10 µL"], ["管柱分離", "依極性分開"], ["UV 偵測", "280 nm"],
+    ["層析圖", "訊號 vs 時間"], ["峰面積", "積分"], ["濃度", "查檢量線"]
+  ];
+  const w = 128, h = 62, gap = 26, y = 70;
+  boxes.forEach((b, i) => {
+    const x = 12 + i*(w+gap);
+    const isLast = i === boxes.length-1;
+    el("rect",{x, y, width:w, height:h, rx:11,
+      fill: isLast ? "var(--accent)" : "var(--panel)",
+      stroke: isLast ? "var(--accent)" : "var(--line2)", "stroke-width":1.4}, svg);
+    let t = el("text",{x:x+w/2, y:y+26, "text-anchor":"middle",
+      "font-size":14.5, "font-weight":600, fill: isLast ? "#fff" : "var(--ink)"}, svg);
+    t.textContent = b[0];
+    t = el("text",{x:x+w/2, y:y+45, "text-anchor":"middle", "font-size":11.5,
+      fill: isLast ? "#ffffffcc" : "var(--ink3)"}, svg);
+    t.textContent = b[1];
+    if (i < boxes.length-1){
+      const ax = x+w+4, mid = y+h/2;
+      el("path",{d:`M${ax} ${mid} L${ax+gap-8} ${mid}`, stroke:"var(--line2)","stroke-width":1.6}, svg);
+      el("path",{d:`M${ax+gap-8} ${mid} l-6 -4 v8 z`, fill:"var(--line2)"}, svg);
+    }
+  });
+  // 底下標註三次轉換
+  const marks = [["訊號", 2, 3], ["面積", 3, 4], ["濃度", 4, 5]];
+  marks.forEach(([lab, a, b]) => {
+    const x1 = 12 + a*(w+gap) + w/2, x2 = 12 + b*(w+gap) + w/2;
+    el("path",{d:`M${x1} 150 L${x1} 162 L${x2} 162 L${x2} 150`,
+      stroke:"var(--accent2)","stroke-width":1.2, fill:"none","stroke-dasharray":"3 3"}, svg);
+    const t = el("text",{x:(x1+x2)/2, y:180, "text-anchor":"middle","font-size":12,
+      fill:"var(--accent2)"}, svg);
+    t.textContent = lab === "面積" ? "基線+對齊+積分（STEP 3–5）"
+                  : lab === "濃度" ? "檢量線（STEP 6）" : "取樣 721 點";
+  });
+})();
+
+/* ============================== 圖 2：層析圖疊圖 ============================== */
+(function chromatogram(){
+  const svg = document.getElementById("chrom");
+  const ctrl = document.getElementById("chromCtrl");
+  const bandBox = document.getElementById("chromBand");
+  const state = { on: new Set(STDS.map(r=>r.id)), lo: 0, hi: 6 };
+
+  DATA.runs.forEach(r => {
+    const lab = document.createElement("label");
+    lab.innerHTML = `<input type="checkbox" ${state.on.has(r.id)?"checked":""} value="${r.id}">
+      <span class="swatch" style="background:${r.color}"></span>${r.id}`;
+    lab.querySelector("input").addEventListener("change", e => {
+      e.target.checked ? state.on.add(r.id) : state.on.delete(r.id); draw();
+    });
+    ctrl.appendChild(lab);
+  });
+  document.querySelectorAll("#chromZoom button").forEach(b =>
+    b.addEventListener("click", () => {
+      document.querySelectorAll("#chromZoom button").forEach(o => o.setAttribute("aria-pressed","false"));
+      b.setAttribute("aria-pressed","true");
+      state.lo = +b.dataset.lo; state.hi = +b.dataset.hi; draw();
+    }));
+  bandBox.addEventListener("change", draw);
+
+  const pad = {l:64,r:16,t:16,b:44,w:900,h:400};
+  function draw(){
+    clear(svg);
+    const shown = DATA.runs.filter(r => state.on.has(r.id));
+    const i0 = iOf(state.lo), i1 = iOf(state.hi);
+    let ymin = 0, ymax = 1;
+    shown.forEach(r => { for (let i = Math.floor(i0); i <= Math.ceil(i1); i++){
+      const v = r.y[i]/1000; if (v > ymax) ymax = v; if (v < ymin) ymin = v; } });
+    const padY = (ymax-ymin)*0.08;
+    const x = sc(state.lo, state.hi, pad.l, pad.w-pad.r);
+    const y = sc(ymin-padY, ymax+padY, pad.h-pad.b, pad.t);
+
+    if (bandBox.checked && state.hi > M.rtLo)
+      el("rect",{x:x(Math.max(M.rtLo,state.lo)), y:pad.t,
+        width:Math.max(0, x(Math.min(M.rtHi,state.hi))-x(Math.max(M.rtLo,state.lo))),
+        height:pad.h-pad.b-pad.t, fill:"var(--band)"}, svg);
+
+    axes(svg, x, y, [state.lo,state.hi], [ymin-padY,ymax+padY], pad,
+         "滯留時間 (min)", "訊號強度 (mV)");
+
+    shown.forEach(r => el("path",{d:trace(r,x,y,i0,i1), stroke:r.color,
+      "stroke-width":1.7, fill:"none","stroke-linejoin":"round"}, svg));
+
+    // legend
+    const lg = el("g",{},svg);
+    shown.forEach((r,k) => {
+      const lx = pad.l+12, ly = pad.t+16+k*17;
+      el("line",{x1:lx,y1:ly,x2:lx+18,y2:ly,stroke:r.color,"stroke-width":2.4},lg);
+      const t = el("text",{x:lx+24,y:ly+4,"font-size":11.5,fill:"var(--ink2)"},lg);
+      t.textContent = r.id + (r.conc != null ? `  (${r.conc} ppm)` : "");
+    });
+
+    // hover crosshair
+    const hov = el("g",{opacity:0},svg);
+    const vline = el("line",{y1:pad.t,y2:pad.h-pad.b,stroke:"var(--ink3)",
+      "stroke-width":1,"stroke-dasharray":"3 3"},hov);
+    const box = el("rect",{rx:6,fill:"var(--panel)",stroke:"var(--line2)"},hov);
+    const txt = el("text",{"font-size":11.5,fill:"var(--ink)"},hov);
+    svg.addEventListener("pointermove", ev => {
+      const p = svgPoint(svg, ev);
+      if (p.x < pad.l || p.x > pad.w-pad.r || !shown.length){ hov.setAttribute("opacity",0); return; }
+      const t = state.lo + (p.x-pad.l)/(pad.w-pad.r-pad.l)*(state.hi-state.lo);
+      const idx = clamp(Math.round(iOf(t)), 0, M.nPoints-1);
+      hov.setAttribute("opacity",1);
+      vline.setAttribute("x1",x(tOf(idx))); vline.setAttribute("x2",x(tOf(idx)));
+      while (txt.firstChild) txt.removeChild(txt.firstChild);
+      const rows = [`t = ${tOf(idx).toFixed(3)} min`]
+        .concat(shown.map(r => `${r.id}: ${(r.y[idx]/1000).toFixed(1)} mV`));
+      rows.forEach((s,k) => {
+        const ts = el("tspan",{x:0,dy:k?14:0},txt); ts.textContent = s;
+      });
+      const bw = 128, bh = rows.length*14+12;
+      const bx = x(tOf(idx)) + (p.x > pad.w*0.6 ? -bw-12 : 12);
+      box.setAttribute("x",bx); box.setAttribute("y",pad.t+6);
+      box.setAttribute("width",bw); box.setAttribute("height",bh);
+      txt.setAttribute("x",bx+10); txt.setAttribute("y",pad.t+24);
+      txt.querySelectorAll("tspan").forEach(ts => ts.setAttribute("x", bx+10));
+    });
+    svg.addEventListener("pointerleave", () => hov.setAttribute("opacity",0));
+  }
+  draw();
+})();
+
+/* ============================== 圖 3-4：基線校正 (airPLS) ============================== */
+(function baseline(){
+  const P = DATA.airpls;
+  const sec = document.getElementById("sB");
+  if (!P){ sec.remove(); document.querySelector('nav a[href="#sB"]').remove(); return; }
+
+  const svg = document.getElementById("bline");
+  const slider = document.getElementById("blLam");
+  const lamV = document.getElementById("blLamV");
+  const fullBox = document.getElementById("blFull");
+  let run = "std-100";
+
+  slider.max = P.demo.length - 1;
+  slider.value = P.demo.findIndex(d => d.lambda === P.bestLambda);
+  if (+slider.value < 0) slider.value = Math.floor(P.demo.length / 2);
+
+  document.querySelectorAll("#blRun button").forEach(b =>
+    b.addEventListener("click", () => {
+      document.querySelectorAll("#blRun button").forEach(o => o.setAttribute("aria-pressed","false"));
+      b.setAttribute("aria-pressed","true"); run = b.dataset.run; draw();
+    }));
+  slider.addEventListener("input", draw);
+  fullBox.addEventListener("change", draw);
+
+  const expo = v => {
+    const e = Math.round(Math.log10(v));
+    return "10" + String(e).replace(/[0-9]/g, d => "⁰¹²³⁴⁵⁶⁷⁸⁹"[+d]);
+  };
+
+  // 上下兩個面板：原始+基線 / 扣基線後
+  const P1 = {l:66,r:16,t:16,b:26,w:900,h:238};
+  const P2 = {l:66,r:16,t:250,b:44,w:900,h:430};
+
+  function draw(){
+    clear(svg);
+    const k = +slider.value;
+    const d = P.demo[k];
+    const bl = P.baselines[run][k];
+    const raw = RUNS[run].y;
+    lamV.textContent = expo(d.lambda);
+
+    const full = fullBox.checked;
+    const apex = (() => { let bi = 0, bv = -Infinity;
+      for (let i = Math.floor(iOf(4.0)); i <= iOf(5.2); i++) if (raw[i] > bv){ bv = raw[i]; bi = i; }
+      return tOf(bi); })();
+    const LO = full ? 0 : Math.max(0, apex - 0.75);
+    const HI = full ? M.tEnd : Math.min(M.tEnd, apex + 0.75);
+    const i0 = Math.floor(iOf(LO)), i1 = Math.ceil(iOf(HI));
+
+    let ymin = 0, ymax = 1;
+    for (let i = i0; i <= i1; i++){
+      const v = raw[i]/1000; if (v>ymax) ymax=v; if (v<ymin) ymin=v;
+      const b = bl[i]/1000;  if (b>ymax) ymax=b; if (b<ymin) ymin=b;
+    }
+    const pyy = (ymax-ymin)*0.08;
+    const x1 = sc(LO, HI, P1.l, P1.w-P1.r);
+    const y1 = sc(ymin-pyy, ymax+pyy, P1.h-P1.b, P1.t);
+    axes(svg, x1, y1, [LO,HI], [ymin-pyy,ymax+pyy], P1, "", "訊號 (mV)");
+
+    const path = (arr, sx, sy) => {
+      let s = "";
+      for (let i = i0; i <= i1; i++) s += (s?"L":"M") + sx(tOf(i)).toFixed(1) + " " + sy(arr[i]/1000).toFixed(1);
+      return s;
+    };
+    // 填色：原始與基線之間 = 被算成峰面積的部分
+    let fill = path(raw, x1, y1);
+    for (let i = i1; i >= i0; i--) fill += "L" + x1(tOf(i)).toFixed(1) + " " + y1(bl[i]/1000).toFixed(1);
+    el("path",{d:fill+"Z", fill:RUNS[run].color, opacity:.14}, svg);
+    el("path",{d:path(raw, x1, y1), stroke:"var(--ink2)","stroke-width":1.6, fill:"none"}, svg);
+    el("path",{d:path(bl, x1, y1), stroke:"var(--accent)","stroke-width":2.2, fill:"none"}, svg);
+    let t = el("text",{x:P1.l+10, y:P1.t+14,"font-size":12,fill:"var(--ink2)"},svg);
+    t.textContent = `${run}　灰=原始訊號　紅=airPLS 基線 (λ=${expo(d.lambda)}, differences=2)`;
+
+    // 下panel：扣掉基線
+    const corr = new Array(M.nPoints);
+    for (let i = 0; i < M.nPoints; i++) corr[i] = raw[i] - bl[i];
+    let cmin = 0, cmax = 1;
+    for (let i = i0; i <= i1; i++){ const v = corr[i]/1000; if (v>cmax) cmax=v; if (v<cmin) cmin=v; }
+    const pc = (cmax-cmin)*0.08;
+    const x2 = sc(LO, HI, P2.l, P2.w-P2.r);
+    const y2 = sc(cmin-pc, cmax+pc, P2.h-P2.b, P2.t);
+    axes(svg, x2, y2, [LO,HI], [cmin-pc,cmax+pc], P2, "滯留時間 (min)", "扣基線後 (mV)");
+    let f2 = "";
+    for (let i = i0; i <= i1; i++) f2 += (f2?"L":"M") + x2(tOf(i)).toFixed(1) + " " + y2(corr[i]/1000).toFixed(1);
+    el("path",{d:f2 + `L${x2(tOf(i1))} ${y2(0)} L${x2(tOf(i0))} ${y2(0)} Z`,
+      fill:RUNS[run].color, opacity:.2}, svg);
+    el("path",{d:f2, stroke:RUNS[run].color,"stroke-width":2, fill:"none"}, svg);
+    // 參考：線性基線扣除後的峰高（虛線）
+    const refH = (() => { let m = -Infinity;
+      for (let i = Math.floor(iOf(4.0)); i <= iOf(5.2); i++) m = Math.max(m, corr[i]);
+      return m/1000; })();
+    el("line",{x1:P2.l, y1:y2(refH/d.keep), x2:P2.w-P2.r, y2:y2(refH/d.keep),
+      stroke:"var(--ink3)","stroke-width":1,"stroke-dasharray":"5 4"}, svg);
+    t = el("text",{x:P2.w-P2.r-4, y:y2(refH/d.keep)-5,"text-anchor":"end",
+      "font-size":11, fill:"var(--ink3)"}, svg);
+    t.textContent = "線性基線的峰高（基準）";
+
+    // 讀數
+    const set = (id, v, col) => { const e = document.getElementById(id);
+      e.textContent = v; if (col) e.style.color = col; };
+    const keepPct = d.keep * 100;
+    set("bl-keep", keepPct.toFixed(1) + " %",
+        keepPct < 99 ? "var(--warn)" : keepPct > 101 ? "var(--warn)" : "var(--ok)");
+    set("bl-slope", d.slope_ratio.toFixed(3),
+        Math.abs(d.slope_ratio - 1) > 0.01 ? "var(--warn)" : "var(--ok)");
+    set("bl-r2", d.r2.toFixed(6));
+    const cs = [d.s1, d.s2, d.s3, d.s4];
+    set("bl-conc", cs.map(v => v.toFixed(1)).join(" / "));
+    const worst = Math.max(...cs.map((v,i) => Math.abs(v - P.ref.conc[i])));
+    const vd = document.getElementById("blVerdict");
+    if (keepPct < 99){
+      vd.innerHTML = `<b style="color:var(--warn)">λ 太小</b>：基線爬進峰底下，` +
+        `峰高只剩 ${keepPct.toFixed(1)}%、檢量線斜率掉到 ${d.slope_ratio.toFixed(3)}，` +
+        `整批訊號被系統性削弱（樣品濃度與基準最大差 ${worst.toFixed(1)} ppm）。`;
+    } else if (worst > 3){
+      vd.innerHTML = `<b style="color:var(--warn)">λ 太大</b>：基線近乎水平線、跟不上真實起伏，` +
+        `殘留漂移被算進面積（樣品濃度與基準最大差 ${worst.toFixed(1)} ppm，` +
+        `圖上幾乎看不出異狀）。`;
+    } else {
+      vd.innerHTML = `<b style="color:var(--ok)">λ 合適</b>：峰高保留 ${keepPct.toFixed(1)}%、` +
+        `斜率比 ${d.slope_ratio.toFixed(3)}，樣品濃度與線性基線基準最大差 ` +
+        `${worst.toFixed(2)} ppm。`;
+    }
+  }
+  draw();
+
+  /* ---- 圖 4：漂移回收測試 ---- */
+  (function drawDrift(){
+    const dsvg = document.getElementById("drift");
+    const pad = {l:70,r:170,t:20,b:44,w:900,h:340};
+    const lams = P.drift[0].lambdas;
+    const all = P.drift.flatMap(d => d.err);
+    const lo = Math.min(-20, Math.min(...all) * 1.1);
+    const hi = Math.min(120, Math.max(...all) * 1.1);
+    const x = sc(0, lams.length - 1, pad.l, pad.w-pad.r);
+    const y = sc(lo, hi, pad.h-pad.b, pad.t);
+
+    // x 軸自訂刻度（lambda 為 log 等距）
+    const g = el("g",{class:"axis"},dsvg), gg = el("g",{class:"grid"},dsvg);
+    lams.forEach((lv,i) => {
+      el("line",{x1:x(i),y1:pad.t,x2:x(i),y2:pad.h-pad.b},gg);
+      const t = el("text",{x:x(i),y:pad.h-pad.b+18,"text-anchor":"middle"},g);
+      t.textContent = "1e" + Math.round(Math.log10(lv));
+    });
+    niceTicks(lo,hi,6).forEach(v=>{
+      el("line",{x1:pad.l,y1:y(v),x2:pad.w-pad.r,y2:y(v)},gg);
+      const t = el("text",{x:pad.l-9,y:y(v)+4,"text-anchor":"end"},g);
+      t.textContent = v.toFixed(0) + "%";
+    });
+    el("line",{x1:pad.l,y1:pad.h-pad.b,x2:pad.w-pad.r,y2:pad.h-pad.b},g);
+    el("line",{x1:pad.l,y1:pad.t,x2:pad.l,y2:pad.h-pad.b},g);
+    el("line",{x1:pad.l,y1:y(0),x2:pad.w-pad.r,y2:y(0),stroke:"var(--ink3)","stroke-width":1.4},dsvg);
+    let t = el("text",{x:(pad.l+pad.w-pad.r)/2,y:pad.h-6,"text-anchor":"middle",class:"alab"},dsvg);
+    t.textContent = "airPLS λ";
+    t = el("text",{x:14,y:(pad.t+pad.h-pad.b)/2,"text-anchor":"middle",class:"alab",
+      transform:`rotate(-90 14 ${(pad.t+pad.h-pad.b)/2})`},dsvg);
+    t.textContent = "面積變化 (%)";
+    t = el("text",{x:pad.l+8,y:y(0)-6,"font-size":11,fill:"var(--ink3)"},dsvg);
+    t.textContent = "0% = 疊加的漂移被完全移除";
+
+    const palette = ["#2563eb","#059669","#d97706","#dc2626","#7c3aed","#0891b2","#65a30d","#db2777"];
+    P.drift.forEach((s,k) => {
+      const col = palette[k % palette.length];
+      const dash = s.run === "std-100" ? null : "5 4";
+      let d = "";
+      s.err.forEach((v,i) => { d += (d?"L":"M") + x(i) + " " + y(clamp(v, lo, hi)); });
+      const p = el("path",{d, stroke:col, fill:"none","stroke-width":2}, dsvg);
+      if (dash) p.setAttribute("stroke-dasharray", dash);
+      s.err.forEach((v,i) => el("circle",{cx:x(i), cy:y(clamp(v, lo, hi)), r:3.2,
+        fill:col}, dsvg));
+      const lx = pad.w-pad.r+12, ly = pad.t+14+k*24;
+      const ln = el("line",{x1:lx,y1:ly,x2:lx+18,y2:ly,stroke:col,"stroke-width":2},dsvg);
+      if (dash) ln.setAttribute("stroke-dasharray", dash);
+      const t1 = el("text",{x:lx+24,y:ly+4,"font-size":10.5,fill:"var(--ink2)"},dsvg);
+      t1.textContent = s.drift;
+      const t2 = el("text",{x:lx+24,y:ly+15,"font-size":9.5,fill:"var(--ink3)"},dsvg);
+      t2.textContent = s.run;
+    });
+
+    // 表格
+    const head = document.querySelector("#driftTbl thead tr");
+    lams.forEach(lv => { const th = document.createElement("th");
+      th.textContent = "λ=1e" + Math.round(Math.log10(lv)); head.appendChild(th); });
+    const tb = document.querySelector("#driftTbl tbody");
+    P.drift.forEach(s => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td>${s.run}</td><td>${s.drift}</td>` +
+        s.err.map(v => `<td${Math.abs(v) > 5 ? ' class="hi"' : ""}>${v.toFixed(1)}%</td>`).join("");
+      tb.appendChild(tr);
+    });
+  })();
+})();
+
+/* ============================== 圖 4-5：峰對齊 (alignDE) ============================== */
+(function alignment(){
+  const A = DATA.align;
+  const sec = document.getElementById("sA");
+  if (!A){ sec.remove();
+    document.querySelector('nav a[href="#sA"]').remove(); return; }
+
+  document.getElementById("alnRef").textContent =
+    `${A.reference}（峰頂 ${A.refApex.toFixed(3)} min）· alignDE ${A.params.version}` +
+    `· slack=${A.params.slack}, NP=${A.params.np}, itermax=${A.params.itermax}`;
+
+  /* ---- 圖 3：對齊前後疊圖 ---- */
+  const svg = document.getElementById("align");
+  const winBox = document.getElementById("alnWin");
+  let mode = "bc";
+  document.querySelectorAll("#alnToggle button").forEach(b =>
+    b.addEventListener("click", () => {
+      document.querySelectorAll("#alnToggle button").forEach(o => o.setAttribute("aria-pressed","false"));
+      b.setAttribute("aria-pressed","true"); mode = b.dataset.mode; drawAlign();
+    }));
+  winBox.addEventListener("change", drawAlign);
+
+  const pad = {l:66,r:16,t:16,b:44,w:900,h:400};
+  const LO = 4.0, HI = 5.3;
+  function drawAlign(){
+    clear(svg);
+    const ids = DATA.runs.map(r => r.id);
+    const i0 = iOf(LO), i1 = iOf(HI);
+    let ymax = 1, ymin = 0;
+    ids.forEach(id => { const v = A.traces[id][mode];
+      for (let i = Math.floor(i0); i <= Math.ceil(i1); i++){
+        const q = v[i]/1000; if (q>ymax) ymax=q; if (q<ymin) ymin=q; } });
+    const py = (ymax-ymin)*0.07;
+    const x = sc(LO, HI, pad.l, pad.w-pad.r);
+    const y = sc(ymin-py, ymax+py, pad.h-pad.b, pad.t);
+
+    if (winBox.checked)
+      el("rect",{x:x(Math.max(A.winLo,LO)), y:pad.t,
+        width:x(Math.min(A.winHi,HI))-x(Math.max(A.winLo,LO)),
+        height:pad.h-pad.b-pad.t, fill:"var(--band)"}, svg);
+
+    axes(svg, x, y, [LO,HI], [ymin-py,ymax+py], pad,
+         "滯留時間 (min)", "訊號 (mV，已扣基線)");
+
+    // 參考峰位
+    el("line",{x1:x(A.refApex), y1:pad.t, x2:x(A.refApex), y2:pad.h-pad.b,
+      stroke:"var(--ink3)","stroke-width":1.2,"stroke-dasharray":"5 4"}, svg);
+    let t = el("text",{x:x(A.refApex)+6, y:pad.t+13,"font-size":11.5, fill:"var(--ink3)"}, svg);
+    t.textContent = `參考峰位 ${A.refApex.toFixed(3)}`;
+
+    ids.forEach(id => {
+      const r = RUNS[id], v = A.traces[id][mode];
+      let d = "";
+      for (let i = Math.floor(i0); i <= Math.ceil(i1); i++)
+        d += (d?"L":"M") + x(tOf(i)).toFixed(1) + " " + y(v[i]/1000).toFixed(1);
+      el("path",{d, stroke:r.color, fill:"none",
+        "stroke-width": r.kind === "sample" ? 2.2 : 1.5,
+        opacity: r.kind === "sample" ? 1 : .85}, svg);
+    });
+
+    const lg = el("g",{},svg);
+    ids.forEach((id,k) => {
+      const lx = pad.l+12, ly = pad.t+16+k*15;
+      el("line",{x1:lx,y1:ly,x2:lx+16,y2:ly,stroke:RUNS[id].color,"stroke-width":2.4},lg);
+      const tt = el("text",{x:lx+22,y:ly+4,"font-size":11,fill:"var(--ink2)"},lg);
+      tt.textContent = id;
+    });
+    const cap = el("text",{x:pad.w-pad.r, y:pad.t+13,"text-anchor":"end",
+      "font-size":13, fill:"var(--ink2)","font-weight":600}, svg);
+    cap.textContent = mode === "bc" ? "對齊前" : "對齊後（alignDE）";
+  }
+  drawAlign();
+
+  /* ---- 診斷表 ---- */
+  const dtb = document.querySelector("#alnDiag tbody");
+  const isNum = v => typeof v === "number" && !Number.isNaN(v);
+  A.diag.forEach(d => {
+    const na = v => isNum(v) ? v.toFixed(3) : "—";
+    const sg = v => isNum(v) ? (v>=0?"+":"") + v.toFixed(3) : "—";
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td>${d.file}</td><td>${d.cor_before.toFixed(4)}</td>
+      <td>${d.cor_after.toFixed(4)}</td><td>${na(d.apex_before)}</td>
+      <td>${na(d.apex_after)}</td><td>${sg(d.dev_after)}</td>`;
+    dtb.appendChild(tr);
+  });
+
+  /* ---- 圖 4：視窗寬度敏感度 ---- */
+  const ssvg = document.getElementById("sens");
+  (function drawSens(){
+    const spad = {l:66,r:150,t:20,b:44,w:900,h:330};
+    const hws = A.sens.map(s => s.hw);
+    const names = A.sens[0].samples;
+    const all = A.sens.flatMap(s => s.before.concat(s.after));
+    const x = sc(Math.min(...hws)-0.02, Math.max(...hws)+0.02, spad.l, spad.w-spad.r);
+    const y = sc(Math.min(...all)*0.95, Math.max(...all)*1.03, spad.h-spad.b, spad.t);
+    axes(ssvg, x, y, [Math.min(...hws),Math.max(...hws)],
+         [Math.min(...all)*0.95, Math.max(...all)*1.03], spad,
+         "固定積分視窗半寬 (min)", "算出的濃度 (ppm)", v => v.toFixed(0));
+
+    names.forEach((nm, k) => {
+      const col = RUNS[nm].color;
+      [["before","4 4",1.6],["after",null,2.4]].forEach(([key, dash, w]) => {
+        let d = "";
+        A.sens.forEach(s => { d += (d?"L":"M") + x(s.hw) + " " + y(s[key][k]); });
+        const p = el("path",{d, stroke:col, fill:"none","stroke-width":w,
+          opacity: key === "before" ? .55 : 1}, ssvg);
+        if (dash) p.setAttribute("stroke-dasharray", dash);
+        A.sens.forEach(s => el("circle",{cx:x(s.hw), cy:y(s[key][k]), r: key==="after"?3.4:2.6,
+          fill: key === "after" ? col : "var(--panel)", stroke:col,
+          "stroke-width":1.4, opacity: key === "before" ? .7 : 1}, ssvg));
+      });
+      const lx = spad.w-spad.r+14, ly = spad.t+16+k*30;
+      el("line",{x1:lx,y1:ly,x2:lx+20,y2:ly,stroke:col,"stroke-width":2.4},ssvg);
+      const t1 = el("text",{x:lx+26,y:ly+4,"font-size":11.5,fill:"var(--ink2)"},ssvg);
+      t1.textContent = nm;
+      el("line",{x1:lx,y1:ly+13,x2:lx+20,y2:ly+13,stroke:col,"stroke-width":1.6,
+        "stroke-dasharray":"4 4", opacity:.55},ssvg);
+      const t2 = el("text",{x:lx+26,y:ly+17,"font-size":10.5,fill:"var(--ink3)"},ssvg);
+      t2.textContent = "未對齊";
+    });
+    const t = el("text",{x:spad.l+8, y:spad.t+12,"font-size":11.5, fill:"var(--ink3)"}, ssvg);
+    t.textContent = "實線 = 對齊後　虛線 = 未對齊";
+  })();
+
+  const stb = document.querySelector("#sensTbl tbody");
+  A.sens.forEach(s => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td>±${s.hw.toFixed(2)} min</td>` +
+      s.before.map(v => `<td style="opacity:.7">${v.toFixed(1)}</td>`).join("") +
+      s.after.map(v => `<td class="hi">${v.toFixed(1)}</td>`).join("");
+    stb.appendChild(tr);
+  });
+  const hdr = document.querySelector("#sensTbl thead");
+  const tr2 = document.createElement("tr");
+  tr2.innerHTML = "<th></th>" + A.sens[0].samples.map(n =>
+      `<th style="font-size:11px">${n.replace("sample-","s")}</th>`).join("").repeat(2);
+  hdr.appendChild(tr2);
+})();
+
+/* ============================== 圖 6：峰積分 ============================== */
+(function integration(){
+  const svg = document.getElementById("integ");
+  const sel = document.getElementById("intRun");
+  const nSlider = document.getElementById("intN");
+  const nView = document.getElementById("intNv");
+  const showTrap = document.getElementById("intShowTrap");
+
+  DATA.runs.filter(r => r.caf).forEach(r => {
+    const o = document.createElement("option");
+    o.value = r.id; o.textContent = r.id + (r.conc != null ? ` (${r.conc} ppm 標準品)` : " (樣品)");
+    sel.appendChild(o);
+  });
+  sel.value = "std-100";
+
+  const st = {};
+  function reset(){
+    const r = RUNS[sel.value];
+    st.i0 = Math.round(iOf(r.caf.t0)); st.i1 = Math.round(iOf(r.caf.t1));
+  }
+  reset();
+
+  sel.addEventListener("change", () => { reset(); draw(); });
+  document.getElementById("intReset").addEventListener("click", () => { reset(); draw(); });
+  nSlider.addEventListener("input", () => { nView.textContent = nSlider.value; draw(); });
+  showTrap.addEventListener("change", draw);
+
+  const pad = {l:70,r:16,t:18,b:44,w:900,h:400};
+  let drag = null;
+
+  function draw(){
+    clear(svg);
+    const r = RUNS[sel.value];
+    const lo = Math.max(0, tOf(st.i0) - 0.55), hi = Math.min(M.tEnd, tOf(st.i1) + 0.55);
+    const i0v = iOf(lo), i1v = iOf(hi);
+    let ymin = 0, ymax = 1;
+    for (let i = Math.floor(i0v); i <= Math.ceil(i1v); i++){
+      const v = r.y[i]/1000; if (v>ymax) ymax=v; if (v<ymin) ymin=v;
+    }
+    const py = (ymax-ymin)*0.1;
+    const x = sc(lo, hi, pad.l, pad.w-pad.r);
+    const y = sc(ymin-py, ymax+py, pad.h-pad.b, pad.t);
+    axes(svg, x, y, [lo,hi], [ymin-py,ymax+py], pad, "滯留時間 (min)", "訊號強度 (mV)");
+
+    const y0 = r.y[st.i0], y1 = r.y[st.i1];
+    const bAt = i => (y0 + (y1-y0)*(i-st.i0)/(st.i1-st.i0)) / 1000;
+
+    // 填色：曲線與基線之間
+    let d = "";
+    for (let i = st.i0; i <= st.i1; i++) d += (d?"L":"M") + x(tOf(i)).toFixed(1)+" "+y(r.y[i]/1000).toFixed(1);
+    for (let i = st.i1; i >= st.i0; i--) d += "L" + x(tOf(i)).toFixed(1)+" "+y(bAt(i)).toFixed(1);
+    el("path",{d:d+"Z", fill:r.color, opacity:.16}, svg);
+
+    // 梯形
+    const n = +nSlider.value;
+    if (showTrap.checked){
+      const step = (st.i1-st.i0)/n;
+      const yAt = idx => { const f = clamp(Math.floor(idx),0,M.nPoints-2), fr = idx-f;
+                           return (r.y[f]*(1-fr) + r.y[f+1]*fr)/1000; };
+      for (let k = 0; k < n; k++){
+        const ia = st.i0+k*step, ib = ia+step;
+        el("path",{d:`M${x(tOf(ia))} ${y(bAt(ia))} L${x(tOf(ia))} ${y(yAt(ia))}
+                      L${x(tOf(ib))} ${y(yAt(ib))} L${x(tOf(ib))} ${y(bAt(ib))} Z`,
+          fill:"none", stroke:r.color, "stroke-width":.9, opacity:.75}, svg);
+      }
+    }
+    // 基線
+    el("line",{x1:x(tOf(st.i0)), y1:y(bAt(st.i0)), x2:x(tOf(st.i1)), y2:y(bAt(st.i1)),
+      stroke:"var(--ink3)","stroke-width":1.8,"stroke-dasharray":"6 4"}, svg);
+    const bl = el("text",{x:(x(tOf(st.i0))+x(tOf(st.i1)))/2, y:y(bAt((st.i0+st.i1)/2))+18,
+      "text-anchor":"middle","font-size":11.5, fill:"var(--ink3)"}, svg);
+    bl.textContent = "基線";
+    // 曲線
+    el("path",{d:trace(r,x,y,i0v,i1v), stroke:r.color, "stroke-width":2, fill:"none"}, svg);
+
+    // 把手
+    [["i0",st.i0],["i1",st.i1]].forEach(([key,idx]) => {
+      const X = x(tOf(idx));
+      const g = el("g",{style:"cursor:ew-resize"}, svg);
+      el("line",{x1:X,y1:pad.t,x2:X,y2:pad.h-pad.b,stroke:"var(--accent)",
+        "stroke-width":1.5,"stroke-dasharray":"4 4"}, g);
+      el("rect",{x:X-7,y:pad.t-2,width:14,height:22,rx:4,fill:"var(--accent)"}, g);
+      el("rect",{x:X-16,y:pad.t-6,width:32,height:pad.h-pad.b-pad.t+12,fill:"transparent"}, g);
+      const t = el("text",{x:X, y:pad.h-pad.b+34,"text-anchor":"middle","font-size":11,
+        fill:"var(--accent)","font-weight":600}, svg);
+      t.textContent = tOf(idx).toFixed(3);
+      g.addEventListener("pointerdown", ev => { drag = key; svg.setPointerCapture(ev.pointerId); });
+    });
+
+    // 讀數
+    const full = areaFull(r.y, st.i0, st.i1);
+    const approx = areaN(r.y, st.i0, st.i1, n);
+    const inst = r.caf.area;
+    document.getElementById("ro-range").textContent =
+      `${tOf(st.i0).toFixed(3)} – ${tOf(st.i1).toFixed(3)} min`;
+    document.getElementById("ro-approx").textContent = fmt(approx);
+    document.getElementById("ro-full").textContent = fmt(full);
+    document.getElementById("ro-inst").textContent = fmt(inst);
+    const diff = (full-inst)/inst*100;
+    const dEl = document.getElementById("ro-diff");
+    dEl.textContent = (diff>=0?"+":"") + diff.toFixed(2) + " %";
+    dEl.style.color = Math.abs(diff) < 1 ? "var(--ok)" : "var(--warn)";
+  }
+
+  svg.addEventListener("pointermove", ev => {
+    if (!drag) return;
+    const p = svgPoint(svg, ev);
+    const r = RUNS[sel.value];
+    const lo = Math.max(0, tOf(st.i0) - 0.55), hi = Math.min(M.tEnd, tOf(st.i1) + 0.55);
+    const t = lo + (p.x-pad.l)/(pad.w-pad.r-pad.l)*(hi-lo);
+    const idx = clamp(Math.round(iOf(t)), 0, M.nPoints-1);
+    if (drag === "i0") st.i0 = Math.min(idx, st.i1-4);
+    else st.i1 = Math.max(idx, st.i0+4);
+    draw();
+  });
+  svg.addEventListener("pointerup", () => drag = null);
+  svg.addEventListener("pointercancel", () => drag = null);
+  draw();
+})();
+
+/* ============================== 圖 7：檢量線 ============================== */
+let CAL = null;   // 供圖 5 使用
+(function calibration(){
+  const svg = document.getElementById("calib");
+  const cZero = document.getElementById("calZero");
+  const cForce = document.getElementById("calForce");
+  const cSamp = document.getElementById("calShowSamples");
+  [cZero,cForce,cSamp].forEach(c => c.addEventListener("change", draw));
+
+  const pad = {l:74,r:16,t:18,b:44,w:900,h:250};
+  const rpad = {l:74,r:16,t:272,b:26,w:900,h:380};
+
+  function draw(){
+    clear(svg);
+    const pts = STDS.filter(r => cZero.checked || r.conc > 0);
+    const xs = pts.map(r => r.conc), ys = pts.map(r => r.caf ? r.caf.area : 0);
+    const fit = linreg(xs, ys, cForce.checked);
+    CAL = { fit, xs, ys };
+
+    const xmax = 215, ymax = Math.max(...ys)*1.08;
+    const x = sc(-6, xmax, pad.l, pad.w-pad.r);
+    const y = sc(-ymax*0.04, ymax, pad.h-pad.b, pad.t);
+    axes(svg, x, y, [0,xmax], [0,ymax], pad, "咖啡因濃度 (ppm)", "峰面積",
+         v => (v/1e6).toFixed(1)+"M");
+
+    // 迴歸線
+    el("line",{x1:x(-6), y1:y(fit.b0+fit.b1*(-6)), x2:x(xmax), y2:y(fit.b0+fit.b1*xmax),
+      stroke:"var(--accent)","stroke-width":2}, svg);
+
+    // 樣品
+    if (cSamp.checked) SAMPS.forEach((r,k) => {
+      const c = (r.caf.area - fit.b0)/fit.b1;
+      el("path",{d:`M${x(c)} ${y(r.caf.area)-8} l7 12 h-14 z`, fill:r.color, opacity:.9}, svg);
+      const lx = x(122), ly = pad.t + 42 + k*20;
+      el("line",{x1:x(c),y1:y(r.caf.area),x2:lx-6,y2:ly-4,stroke:r.color,
+        "stroke-width":.8, opacity:.45}, svg);
+      const t = el("text",{x:lx, y:ly, "font-size":11.5, fill:r.color},svg);
+      t.textContent = `${r.id}: ${c.toFixed(1)} ppm`;
+    });
+
+    // 標準點
+    pts.forEach(r => {
+      el("circle",{cx:x(r.conc), cy:y(r.caf?r.caf.area:0), r:5.5,
+        fill:"var(--panel)", stroke:"var(--ink)","stroke-width":2}, svg);
+      const t = el("text",{x:x(r.conc)+9, y:y(r.caf?r.caf.area:0)+16,"font-size":11,
+        fill:"var(--ink3)"}, svg);
+      t.textContent = r.conc + " ppm";
+    });
+
+    // 殘差圖
+    const rmax = Math.max(...fit.res.map(Math.abs))*1.35 || 1;
+    const rx = sc(-6, xmax, rpad.l, rpad.w-rpad.r);
+    const ry = sc(-rmax, rmax, rpad.h-rpad.b, rpad.t);
+    el("line",{x1:rpad.l, y1:ry(0), x2:rpad.w-rpad.r, y2:ry(0),
+      stroke:"var(--line2)","stroke-width":1}, svg);
+    let t = el("text",{x:rpad.l, y:rpad.t-6, "font-size":12, fill:"var(--ink2)"}, svg);
+    t.textContent = "殘差（實測面積 − 迴歸預測面積）";
+    pts.forEach((r,i) => {
+      const X = rx(r.conc), Y = ry(fit.res[i]);
+      el("line",{x1:X,y1:ry(0),x2:X,y2:Y,stroke:"var(--accent2)","stroke-width":2.5}, svg);
+      el("circle",{cx:X,cy:Y,r:4,fill:"var(--accent2)"}, svg);
+      const tt = el("text",{x:X, y:ry(0)+(fit.res[i]>=0?16:-8), "text-anchor":"middle",
+        "font-size":10.5, fill:"var(--ink3)"}, svg);
+      tt.textContent = r.conc;
+    });
+
+    // 讀數
+    const eq = cForce.checked
+      ? `Area = ${fmt(fit.b1,2)} × C　（強制過原點，n = ${fit.n}）`
+      : `Area = ${fmt(fit.b1,2)} × C ${fit.b0>=0?"+":"−"} ${fmt(Math.abs(fit.b0),2)}　（n = ${fit.n}）`;
+    document.getElementById("calEq").textContent = eq;
+    document.getElementById("ro-slope").textContent = fmt(fit.b1,0);
+    document.getElementById("ro-int").textContent = fmt(fit.b0,0);
+    document.getElementById("ro-r2").textContent = fit.r2.toFixed(6);
+    document.getElementById("ro-s").textContent = fmt(fit.s,0);
+    document.getElementById("ro-lod").textContent = (3.3*fit.s/fit.b1).toFixed(2)+" ppm";
+    document.getElementById("ro-loq").textContent = (10*fit.s/fit.b1).toFixed(2)+" ppm";
+    if (window.__redrawQuant) window.__redrawQuant();
+  }
+  draw();
+})();
+
+/* ============================== 圖 8：樣品定量 ============================== */
+(function quant(){
+  const svg = document.getElementById("quant");
+  const btns = document.getElementById("quantBtns");
+  let active = SAMPS[0].id, anim = 0, timer = null;
+
+  const seg = document.createElement("div");
+  seg.className = "seg";
+  SAMPS.forEach((r,k) => {
+    const b = document.createElement("button");
+    b.textContent = r.id; b.setAttribute("aria-pressed", k===0 ? "true":"false");
+    b.addEventListener("click", () => {
+      seg.querySelectorAll("button").forEach(o => o.setAttribute("aria-pressed","false"));
+      b.setAttribute("aria-pressed","true"); active = r.id; play();
+    });
+    seg.appendChild(b);
+  });
+  btns.appendChild(seg);
+
+  const pad = {l:74,r:16,t:18,b:44,w:900,h:380};
+  function play(){
+    anim = 0; clearInterval(timer);
+    timer = setInterval(() => { anim = Math.min(1, anim + 0.045); draw();
+      if (anim >= 1) clearInterval(timer); }, 16);
+  }
+  function draw(){
+    if (!CAL) return;
+    clear(svg);
+    const fit = CAL.fit;
+    const r = RUNS[active];
+    const area = r.caf.area, conc = (area - fit.b0)/fit.b1;
+    const xmax = 215, ymax = Math.max(...CAL.ys, area)*1.08;
+    const x = sc(-6, xmax, pad.l, pad.w-pad.r);
+    const y = sc(-ymax*0.04, ymax, pad.h-pad.b, pad.t);
+    axes(svg, x, y, [0,xmax], [0,ymax], pad, "咖啡因濃度 (ppm)", "峰面積",
+         v => (v/1e6).toFixed(1)+"M");
+
+    // 95% 預測帶
+    const tv = T_TABLE[fit.df] || 2.0;
+    let up = "", dn = [];
+    for (let c = -6; c <= xmax; c += 4){
+      const se = fit.s * Math.sqrt(1 + 1/fit.n + (c-fit.mx)*(c-fit.mx)/fit.sxx);
+      const yy = fit.b0 + fit.b1*c;
+      up += (up?"L":"M") + x(c) + " " + y(yy + tv*se);
+      dn.push([x(c), y(yy - tv*se)]);
+    }
+    dn.reverse().forEach(p => up += "L" + p[0] + " " + p[1]);
+    el("path",{d:up+"Z", fill:"var(--ink3)", opacity:.12}, svg);
+
+    el("line",{x1:x(-6), y1:y(fit.b0+fit.b1*(-6)), x2:x(xmax), y2:y(fit.b0+fit.b1*xmax),
+      stroke:"var(--accent)","stroke-width":2}, svg);
+    CAL.xs.forEach((c,i) => el("circle",{cx:x(c), cy:y(CAL.ys[i]), r:5,
+      fill:"var(--panel)", stroke:"var(--ink)","stroke-width":1.8}, svg));
+
+    // 動畫：先水平後垂直
+    const p1 = clamp(anim/0.5, 0, 1), p2 = clamp((anim-0.5)/0.5, 0, 1);
+    const Xt = x(-6) + (x(conc)-x(-6))*p1;
+    el("line",{x1:x(-6), y1:y(area), x2:Xt, y2:y(area), stroke:r.color,
+      "stroke-width":2.2,"stroke-dasharray":"6 4"}, svg);
+    if (p2 > 0){
+      const Yt = y(area) + (y(0)-y(area))*p2;
+      el("line",{x1:x(conc), y1:y(area), x2:x(conc), y2:Yt, stroke:r.color,
+        "stroke-width":2.2,"stroke-dasharray":"6 4"}, svg);
+    }
+    el("circle",{cx:x(conc), cy:y(area), r:6, fill:r.color, opacity:p1}, svg);
+    let t = el("text",{x:x(-6)+8, y:y(area)-8, "font-size":12, fill:r.color,"font-weight":600}, svg);
+    t.textContent = `${r.id} 面積 ${fmt(area)}`;
+    if (p2 >= 1){
+      t = el("text",{x:x(conc), y:y(0)+ (pad.h-pad.b - y(0)) + 0, "text-anchor":"middle",
+        "font-size":13, fill:r.color, "font-weight":700}, svg);
+      t.setAttribute("y", pad.h-pad.b-8);
+      t.textContent = conc.toFixed(2) + " ppm";
+    }
+
+    const se = fit.s/fit.b1 * Math.sqrt(1 + 1/fit.n + (conc-fit.mx)*(conc-fit.mx)/fit.sxx);
+    document.getElementById("q-area").textContent = fmt(area);
+    document.getElementById("q-conc").textContent = conc.toFixed(2) + " ppm";
+    document.getElementById("q-ci").textContent =
+      `${(conc-tv*se).toFixed(2)} – ${(conc+tv*se).toFixed(2)}`;
+    const inRange = conc >= Math.min(...CAL.xs) && conc <= Math.max(...CAL.xs);
+    const el2 = document.getElementById("q-in");
+    el2.textContent = inRange ? "是" : "否（外插）";
+    el2.style.color = inRange ? "var(--ok)" : "var(--warn)";
+  }
+  window.__redrawQuant = draw;
+  play();
+})();
+
+/* ============================== 圖 9：判峰陷阱 ============================== */
+(function misid(){
+  const svg = document.getElementById("misid");
+  let active = "sample-3";
+  document.querySelectorAll("#trapPick button").forEach(b =>
+    b.addEventListener("click", () => {
+      document.querySelectorAll("#trapPick button").forEach(o => o.setAttribute("aria-pressed","false"));
+      b.setAttribute("aria-pressed","true"); active = b.dataset.run; draw();
+    }));
+
+  const pad = {l:70,r:16,t:40,b:44,w:900,h:380};
+  function draw(){
+    clear(svg);
+    const r = RUNS[active];
+    const wrong = r.peaks.find(p => p.named);          // 儀器指認的峰
+    const right = r.caf;                                // 實際咖啡因峰
+    const lo = 0.8, hi = 6;
+    let ymax = 1;
+    for (let i = Math.floor(iOf(lo)); i <= iOf(hi); i++) ymax = Math.max(ymax, r.y[i]/1000);
+    const x = sc(lo, hi, pad.l, pad.w-pad.r);
+    const y = sc(-ymax*0.06, ymax*1.18, pad.h-pad.b, pad.t);
+    axes(svg, x, y, [lo,hi], [0,ymax*1.18], pad, "滯留時間 (min)", "訊號強度 (mV)");
+    el("path",{d:trace(r,x,y,iOf(lo),iOf(hi)), stroke:r.color,"stroke-width":1.8,fill:"none"}, svg);
+
+    function mark(pk, color, label, area, up){
+      if (!pk) return;
+      const X = x(pk.rt), Y = y(pk.h/1000);
+      el("path",{d:`M${X} ${Y-10} l6 -12 h-12 z`, fill:color}, svg);
+      el("line",{x1:X, y1:Y-22, x2:X, y2:up, stroke:color,"stroke-width":1.2,
+        "stroke-dasharray":"3 3"}, svg);
+      const t1 = el("text",{x:X, y:up-16,"text-anchor":"middle","font-size":12.5,
+        fill:color,"font-weight":700}, svg);
+      t1.textContent = label;
+      const t2 = el("text",{x:X, y:up-2,"text-anchor":"middle","font-size":11.5, fill:color}, svg);
+      t2.textContent = `RT ${pk.rt.toFixed(3)} · 面積 ${fmt(area)}`;
+    }
+    mark(wrong, "var(--warn)", "儀器指認為咖啡因 ✗", wrong ? wrong.area : 0, pad.t+34);
+    mark(right, "var(--ok)", "實際咖啡因峰 ✓", right.area, pad.t+90);
+
+    if (wrong && right){
+      const ratio = right.area / wrong.area;
+      const t = el("text",{x:pad.w-pad.r, y:pad.t-14,"text-anchor":"end","font-size":12.5,
+        fill:"var(--ink2)"}, svg);
+      t.textContent = `面積相差 ${ratio.toFixed(0)} 倍`;
+    }
+  }
+  draw();
+})();
+
+/* ============================== 結果表 ============================== */
+(function results(){
+  const tb = document.querySelector("#resultTbl tbody");
+  const fit = CAL.fit, tv = T_TABLE[fit.df] || 2.776;
+  SAMPS.forEach(r => {
+    const c = (r.caf.area - fit.b0)/fit.b1;
+    const se = fit.s/fit.b1 * Math.sqrt(1 + 1/fit.n + (c-fit.mx)*(c-fit.mx)/fit.sxx);
+    const inR = c >= Math.min(...CAL.xs) && c <= Math.max(...CAL.xs);
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td>${r.id}</td><td>${r.caf.rt.toFixed(3)}</td>
+      <td>${fmt(r.caf.area)}</td><td class="hi">${c.toFixed(2)}</td>
+      <td>${(c-tv*se).toFixed(2)} – ${(c+tv*se).toFixed(2)}</td>
+      <td>${inR ? "是" : "否"}</td>`;
+    tb.appendChild(tr);
+  });
+})();
+</script>
+</body>
+</html>

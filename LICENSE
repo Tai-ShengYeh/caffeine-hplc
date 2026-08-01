@@ -1,0 +1,46 @@
+資料與教材授權 — Creative Commons 姓名標示 4.0 國際 (CC BY 4.0)
+===============================================================
+
+Copyright (c) 2026 Tai-Sheng Yeh
+
+本 repo 中的「實驗資料與教材內容」——HPLC 層析資料檔 (std-*.txt、
+sample-*.txt)、教學網頁 (hplc_basic.html、hplc_teaching.html)、
+分析輸出 (outputs/) 與說明文字 (README.md)——採用「創用 CC 姓名標示
+4.0 國際」授權條款釋出。
+
+    https://creativecommons.org/licenses/by/4.0/deed.zh_TW
+    法律條款全文：https://creativecommons.org/licenses/by/4.0/legalcode
+
+你可以自由地分享與修改本素材，包括商業性利用，惟需給予適當表彰、提供
+指向本授權條款的連結，並指出是否對原素材進行過變更。
+
+建議的姓名標示格式：
+
+    「HPLC 咖啡因檢量線與樣品定量」by Tai-Sheng Yeh，依 CC BY 4.0 授權。
+    原始出處：https://github.com/Tai-ShengYeh/caffeine-hplc
+
+
+資料來源說明
+------------
+
+層析資料為作者實驗室以 Shimadzu LCsolution 量測後匯出的 ASCII 檔，
+未經修改。依檔案表頭的 Acquired 欄位，採集時間為 2016 年 10 月 14 日
+與 10 月 17 日，ASCII 匯出於 2019 年 1 月 7 日。六個標準品（0、25、
+50、100、150、200 ppm）與四個樣品，樣品以編號標示、未指涉任何商品
+或品牌。
+
+資料照原樣提供，不對其正確性或特定用途之適用性作任何擔保。它的用途是
+教學示範——說明檢量線建立與樣品定量的流程——不是可引用的分析方法
+驗證資料。
+
+
+範圍說明
+--------
+
+本授權「不」及於下列項目：
+
+1. `*.R`、`*.py` 等程式碼檔案，另以 MIT 授權釋出，詳見 LICENSE-CODE。
+
+2. alignDE 套件本身。方法與原始實作為 Zhi-Min Zhang、Shan Chen、
+   Yi-Zeng Liang 所有；本專案使用的維護分支以 LGPL (>= 2) 散布於
+   https://github.com/Tai-ShengYeh/alignDE 。

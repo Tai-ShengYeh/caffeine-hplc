@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# R
+.Rhistory
+.RData
+.Ruserdata
+.Rproj.user/
+*.Rproj
+
+# 與目錄裡的 std-*.txt / sample-*.txt 完全重複，不需要再收一份壓縮檔
+caffeine_hplc.zip
+
+# Claude Code 本機設定
+.claude/
+
+# 編輯器與作業系統
+.vscode/
+.idea/
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# 暫存
+*~
+*.tmp
+*.bak
